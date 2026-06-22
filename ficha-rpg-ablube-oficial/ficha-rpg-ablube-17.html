@@ -1,0 +1,2588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<meta name="description" content="RPG Ablube — Ficha de Personagem"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RPG Ablube"/>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Cinzel:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<title>RPG Ablube</title>
+<style>
+:root {
+  --neon: #5ef23a; --neon-dark: #2d8a1a; --neon-glow: rgba(94,242,58,0.4);
+  --magenta: #c026d3; --magenta-light: #e040fb; --magenta-glow: rgba(192,38,211,0.4);
+  --bg: #0a0a0f; --bg2: #0f0f18; --panel: #111120; --panel2: #16162a;
+  --text: #d4d4e8; --text-dim: #7070a0;
+  --border: rgba(94,242,58,0.2); --border-m: rgba(192,38,211,0.25);
+  --gold: #f5c518; --sidebar-w: 200px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); font-family:'Share Tech Mono',monospace; color:var(--text); min-height:100vh; display:flex; }
+
+/* ── SIDEBAR ── */
+.sidebar { width:var(--sidebar-w); background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; overflow-y:auto; transition:transform 0.3s; }
+.sidebar-logo { text-align:center; padding:1.2rem 0.5rem 0.8rem; border-bottom:1px solid var(--border); }
+.eye-deco { font-size:1.2rem; filter:drop-shadow(0 0 6px #39ff14); animation:eyePulse 3s ease-in-out infinite; display:inline-block; }
+@keyframes eyePulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+.sidebar-title { font-family:'Metal Mania',cursive; font-size:1.1rem; color:var(--neon); text-shadow:0 0 10px var(--neon-glow); letter-spacing:0.15em; margin:0 0.3rem; }
+.sidebar-player { padding:0.6rem 0.8rem; border-bottom:1px solid var(--border); font-family:'Cinzel',serif; font-size:0.7rem; color:var(--neon); letter-spacing:0.1em; }
+.nav-list { list-style:none; flex:1; padding:0.5rem 0; }
+.nav-item { display:flex; align-items:center; gap:0.5rem; padding:0.55rem 0.8rem; cursor:pointer; transition:all 0.2s; font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); border-left:3px solid transparent; }
+.nav-item:hover { background:rgba(94,242,58,0.05); color:var(--text); }
+.nav-item.active { background:rgba(94,242,58,0.08); color:var(--neon); border-left-color:var(--neon); text-shadow:0 0 6px var(--neon-glow); }
+.nav-icon { font-size:1rem; }
+.sidebar-actions { padding:0.8rem; border-top:1px solid var(--border); }
+
+/* ── TOPBAR (mobile) ── */
+.topbar { display:none; position:fixed; top:0; left:0; right:0; height:50px; background:var(--panel); border-bottom:1px solid var(--border); z-index:99; align-items:center; justify-content:space-between; padding:0 0.8rem; }
+.topbar-title { font-family:'Metal Mania',cursive; font-size:1rem; color:var(--neon); text-shadow:0 0 8px var(--neon-glow); }
+.menu-btn { background:transparent; border:1px solid var(--border); color:var(--neon); padding:0.3rem 0.6rem; cursor:pointer; font-size:1rem; transition:all 0.2s; }
+.menu-btn:hover { background:rgba(94,242,58,0.1); }
+
+/* ── MAIN CONTENT ── */
+.main-content { margin-left:var(--sidebar-w); flex:1; padding:1.5rem; max-width:100%; }
+
+/* ── SCREENS ── */
+.screen { display:none; }
+.screen.active { display:block; }
+.screen-header { margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:0.6rem; }
+.screen-header h1 { font-family:'Metal Mania',cursive; font-size:1.4rem; color:var(--neon); text-shadow:0 0 10px var(--neon-glow); letter-spacing:0.1em; }
+
+/* ── CARDS ── */
+.card { background:var(--panel); border:1px solid var(--border); border-radius:2px; margin-bottom:1rem; position:relative; overflow:hidden; }
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--neon),transparent); opacity:0.4; }
+.card-header { background:linear-gradient(135deg,rgba(192,38,211,0.12),rgba(94,242,58,0.05)); padding:0.5rem 1rem; font-family:'Metal Mania',cursive; font-size:0.85rem; letter-spacing:0.12em; color:var(--neon); text-shadow:0 0 6px var(--neon-glow); border-bottom:1px solid var(--border-m); text-transform:uppercase; }
+.card-body { padding:1rem; }
+
+/* ── FIELDS ── */
+.field-grid { display:grid; gap:0.6rem; margin-bottom:0.6rem; }
+.field-grid.cols-2 { grid-template-columns:1fr 1fr; }
+.field-grid.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+.field { display:flex; flex-direction:column; gap:0.2rem; }
+label { font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--magenta-light); font-weight:600; }
+input[type="text"], input[type="number"], select, textarea { background:rgba(94,242,58,0.04); border:none; border-bottom:1.5px solid rgba(94,242,58,0.22); padding:0.3rem 0.4rem; font-family:'Share Tech Mono',monospace; font-size:0.9rem; color:var(--text); outline:none; transition:all 0.2s; width:100%; }
+input:focus, select:focus, textarea:focus { background:rgba(94,242,58,0.07); border-bottom-color:var(--neon); box-shadow:0 2px 0 rgba(94,242,58,0.2); }
+select option { background:var(--bg2); color:var(--text); }
+textarea { resize:vertical; min-height:80px; border:1px solid rgba(94,242,58,0.15); font-size:0.88rem; line-height:1.6; }
+textarea:focus { border-color:var(--neon); }
+
+/* ── BUTTONS ── */
+.btn-primary { background:linear-gradient(135deg,rgba(94,242,58,0.15),rgba(94,242,58,0.25)); color:var(--neon); border:1px solid var(--neon); font-family:'Metal Mania',cursive; font-size:0.8rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.2rem; cursor:pointer; transition:all 0.2s; box-shadow:0 0 12px rgba(94,242,58,0.15); text-shadow:0 0 6px var(--neon-glow); }
+.btn-primary:hover:not(:disabled) { background:rgba(94,242,58,0.25); box-shadow:0 0 22px var(--neon-glow); transform:translateY(-1px); }
+.btn-primary:disabled { opacity:0.3; cursor:not-allowed; }
+.btn-secondary { background:transparent; color:var(--magenta-light); border:1px solid var(--magenta); font-family:'Metal Mania',cursive; font-size:0.8rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.55rem 1rem; cursor:pointer; transition:all 0.2s; }
+.btn-secondary:hover { background:rgba(192,38,211,0.1); box-shadow:0 0 12px var(--magenta-glow); }
+.btn-danger { background:transparent; color:#ff4444; border:1px solid rgba(255,68,68,0.4); font-family:'Metal Mania',cursive; font-size:0.8rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.55rem 1rem; cursor:pointer; transition:all 0.2s; }
+.btn-danger:hover { background:rgba(255,68,68,0.1); box-shadow:0 0 10px rgba(255,68,68,0.3); }
+.btn-sm { background:rgba(94,242,58,0.07); border:1px solid rgba(94,242,58,0.25); color:var(--neon); font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.28rem 0.6rem; cursor:pointer; transition:all 0.2s; }
+.btn-sm:hover { background:rgba(94,242,58,0.15); }
+.btn-m { background:rgba(192,38,211,0.08); border-color:var(--magenta); color:var(--magenta-light); }
+
+/* ── BARS ── */
+.bar-track { height:8px; background:rgba(255,255,255,0.05); border-radius:1px; overflow:hidden; border:1px solid rgba(255,255,255,0.04); }
+.bar-fill { height:100%; transition:width 0.4s ease; border-radius:1px; }
+.bar-hp { background:linear-gradient(90deg,#7b1fa2,#c026d3); box-shadow:0 0 8px rgba(192,38,211,0.5); }
+.bar-mp { background:linear-gradient(90deg,#1a5e1a,#5ef23a); box-shadow:0 0 8px rgba(94,242,58,0.5); }
+.bar-san { background:linear-gradient(90deg,#1a3a8b,#2980b9); }
+.bar-xp { background:linear-gradient(90deg,#6a1a6a,#e040fb); box-shadow:0 0 8px rgba(224,64,251,0.5); }
+
+/* ── DASHBOARD ── */
+.dash-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; }
+.dash-card { background:var(--panel); border:1px solid var(--border); border-radius:2px; overflow:hidden; }
+.dash-card::before { content:''; display:block; height:1px; background:linear-gradient(90deg,transparent,var(--neon),transparent); opacity:0.4; }
+.dash-card-header { background:linear-gradient(135deg,rgba(192,38,211,0.12),rgba(94,242,58,0.05)); padding:0.45rem 1rem; font-family:'Metal Mania',cursive; font-size:0.8rem; letter-spacing:0.12em; color:var(--neon); border-bottom:1px solid var(--border-m); }
+.identity-card { grid-column:span 1; }
+.level-card { grid-column:span 1; }
+.dash-card > :not(.dash-card-header) { padding:1rem; }
+.identity-layout { display:flex; gap:1rem; align-items:flex-start; }
+.portrait-area { flex-shrink:0; }
+.portrait-frame { width:80px; height:100px; border:2px solid var(--neon-dark); background:linear-gradient(145deg,#050510,#0a0a1a); cursor:pointer; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:all 0.3s; box-shadow:0 0 15px rgba(94,242,58,0.1); }
+.portrait-frame:hover { border-color:var(--neon); box-shadow:0 0 20px var(--neon-glow); }
+.portrait-frame img { width:100%; height:100%; object-fit:cover; position:absolute; }
+.portrait-ph { font-size:2rem; color:rgba(94,242,58,0.2); }
+.portrait-hint { font-size:0.5rem; color:rgba(94,242,58,0.25); font-family:'Cinzel',serif; }
+.char-name-big { font-family:'Metal Mania',cursive; font-size:1.2rem; color:var(--neon); text-shadow:0 0 8px var(--neon-glow); line-height:1.2; margin-bottom:0.3rem; }
+.char-meta { font-family:'Cinzel',serif; font-size:0.65rem; color:var(--text-dim); letter-spacing:0.1em; margin-bottom:0.4rem; }
+.char-prestige-badge { font-family:'Metal Mania',cursive; font-size:0.75rem; color:var(--gold); background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.3); padding:0.2rem 0.5rem; display:inline-block; text-shadow:0 0 6px rgba(245,197,24,0.5); }
+.level-display { display:flex; gap:1rem; align-items:flex-start; }
+.level-circle-big { width:70px; height:70px; border:2px solid var(--neon); border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(circle,rgba(94,242,58,0.1),var(--bg2)); box-shadow:0 0 20px var(--neon-glow); flex-shrink:0; }
+.level-lbl { font-family:'Cinzel',serif; font-size:0.45rem; letter-spacing:0.15em; color:var(--neon); text-transform:uppercase; }
+.level-val { font-family:'Metal Mania',cursive; font-size:1.8rem; color:white; text-shadow:0 0 10px var(--neon-glow); line-height:1; }
+.xp-section { flex:1; }
+.xp-label { font-family:'Cinzel',serif; font-size:0.55rem; color:var(--text-dim); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.2rem; }
+.xp-values { font-family:'Share Tech Mono',monospace; font-size:0.9rem; color:var(--magenta-light); margin-bottom:0.3rem; }
+.resources-grid { display:flex; flex-direction:column; gap:0.7rem; }
+.resource-item { display:flex; flex-direction:column; gap:0.3rem; }
+.resource-label { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.12em; color:var(--text-dim); text-transform:uppercase; }
+.resource-inputs { display:flex; align-items:center; gap:0.3rem; font-family:'Share Tech Mono',monospace; font-size:0.9rem; }
+.resource-inputs input { width:55px; text-align:center; font-size:0.95rem; }
+.attrs-mini-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.4rem; }
+.attr-mini { background:var(--panel2); border:1px solid rgba(94,242,58,0.15); text-align:center; padding:0.4rem 0.2rem; }
+.attr-mini-name { font-family:'Cinzel',serif; font-size:0.45rem; letter-spacing:0.1em; color:var(--text-dim); text-transform:uppercase; }
+.attr-mini-val { font-family:'Metal Mania',cursive; font-size:1.3rem; color:var(--neon); text-shadow:0 0 6px var(--neon-glow); }
+.attr-mini-mod { font-size:0.65rem; color:var(--magenta-light); }
+.pts-badge { font-family:'Share Tech Mono',monospace; font-size:0.7rem; color:var(--gold); background:rgba(245,197,24,0.1); border:1px solid rgba(245,197,24,0.3); padding:0.1rem 0.4rem; float:right; }
+.combat-stats { display:flex; gap:0.5rem; flex-wrap:wrap; }
+.combat-stat { background:var(--panel2); border:1px solid rgba(94,242,58,0.18); text-align:center; padding:0.5rem 0.6rem; flex:1; min-width:55px; }
+.c-lbl { font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.12em; color:var(--text-dim); text-transform:uppercase; margin-bottom:0.1rem; }
+.c-val { font-family:'Metal Mania',cursive; font-size:1.2rem; color:var(--neon); text-shadow:0 0 6px var(--neon-glow); }
+.combat-stat input { font-family:'Metal Mania',cursive; font-size:1.2rem; color:var(--neon); background:transparent; border:none; width:100%; text-align:center; padding:0; text-shadow:0 0 6px var(--neon-glow); }
+.combat-stat input:focus { outline:none; }
+.dice-card > :not(.dash-card-header) { padding:0.8rem; }
+.dice-row { display:flex; flex-wrap:wrap; gap:0.3rem; margin-bottom:0.5rem; }
+.dice-btn { background:rgba(94,242,58,0.06); border:1px solid rgba(94,242,58,0.28); color:var(--neon); font-family:'Metal Mania',cursive; font-size:0.8rem; padding:0.3rem 0.55rem; cursor:pointer; transition:all 0.15s; }
+.dice-btn:hover { background:rgba(94,242,58,0.15); box-shadow:0 0 10px var(--neon-glow); transform:translateY(-1px); }
+.dice-btn:active { transform:scale(0.94); }
+.dice-result-row { display:flex; align-items:center; gap:0.8rem; }
+.dice-result { font-family:'Metal Mania',cursive; font-size:2rem; color:var(--magenta-light); min-width:40px; text-align:center; text-shadow:0 0 12px var(--magenta-glow); animation:rollIn 0.25s ease; }
+@keyframes rollIn { from{transform:scale(0.4) rotate(-15deg);opacity:0} to{transform:scale(1);opacity:1} }
+.dice-history { font-family:'Share Tech Mono',monospace; font-size:0.7rem; color:var(--text-dim); }
+
+/* ── ATTRIBUTES ── */
+.skill-points-panel { background:linear-gradient(135deg,rgba(192,38,211,0.12),rgba(94,242,58,0.06)); border:1px solid var(--magenta); padding:0.7rem 1rem; display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; box-shadow:0 0 20px rgba(192,38,211,0.1); }
+.sp-title { font-family:'Metal Mania',cursive; font-size:0.85rem; color:var(--magenta-light); text-shadow:0 0 8px var(--magenta-glow); }
+.sp-sub { font-size:0.7rem; color:var(--text-dim); margin-top:0.1rem; }
+.sp-count { font-family:'Metal Mania',cursive; font-size:2.2rem; color:var(--neon); min-width:50px; text-align:center; text-shadow:0 0 15px var(--neon-glow); }
+.sp-stats { font-family:'Share Tech Mono',monospace; font-size:0.72rem; color:var(--text-dim); display:flex; flex-direction:column; gap:0.2rem; flex:1; }
+.attrs-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.7rem; }
+.attr-box { background:var(--panel2); border:1px solid rgba(94,242,58,0.2); text-align:center; padding:0.7rem 0.4rem 0.5rem; position:relative; transition:all 0.25s; clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px)); }
+.attr-box:hover { border-color:var(--neon); box-shadow:0 0 12px rgba(94,242,58,0.15); }
+.attr-box.has-pts { border-color:var(--magenta); box-shadow:0 0 14px var(--magenta-glow); }
+.attr-box.at-limit { border-color:var(--gold); box-shadow:0 0 10px rgba(245,197,24,0.3); }
+.attr-name { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.18em; color:var(--magenta-light); text-transform:uppercase; display:block; margin-bottom:0.2rem; }
+.attr-score { font-family:'Metal Mania',cursive; font-size:2rem; color:var(--neon); line-height:1; display:block; cursor:pointer; text-shadow:0 0 10px var(--neon-glow); }
+.attr-score:focus { outline:none; color:white; }
+.attr-mod { font-family:'Share Tech Mono',monospace; font-size:0.78rem; color:var(--magenta-light); display:block; min-height:1rem; }
+.attr-limit-lbl { font-family:'Cinzel',serif; font-size:0.42rem; color:rgba(245,197,24,0.55); display:block; letter-spacing:0.08em; }
+.attr-controls { display:flex; justify-content:center; gap:0.3rem; margin-top:0.3rem; }
+.attr-btn { background:rgba(94,242,58,0.08); border:1px solid rgba(94,242,58,0.28); color:var(--neon); width:22px; height:22px; font-size:1.1rem; line-height:1; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+.attr-btn:hover { background:rgba(94,242,58,0.2); box-shadow:0 0 8px var(--neon-glow); }
+.attr-btn:disabled { opacity:0.2; cursor:not-allowed; }
+
+/* ── SAVES ── */
+.skill-row { display:flex; align-items:center; gap:0.5rem; padding:0.22rem 0; border-bottom:1px solid rgba(94,242,58,0.07); transition:background 0.15s; }
+.skill-row:hover { background:rgba(94,242,58,0.04); }
+.skill-proficient { width:13px; height:13px; border:1.5px solid rgba(94,242,58,0.35); cursor:pointer; flex-shrink:0; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+.skill-proficient.checked { background:var(--neon-dark); border-color:var(--neon); box-shadow:0 0 6px var(--neon-glow); }
+.skill-proficient.checked::after { content:'✦'; font-size:0.5rem; color:var(--neon); }
+.skill-name { font-family:'Share Tech Mono',monospace; font-size:0.82rem; color:var(--text); flex:1; }
+.skill-bonus { font-family:'Metal Mania',cursive; font-size:0.85rem; color:var(--neon); min-width:28px; text-align:right; text-shadow:0 0 6px var(--neon-glow); }
+
+/* ── CONDITIONS ── */
+.conditions-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.3rem; }
+.condition-chip { border:1px solid rgba(192,38,211,0.22); padding:0.2rem 0.3rem; text-align:center; cursor:pointer; font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-dim); transition:all 0.18s; user-select:none; background:rgba(192,38,211,0.03); }
+.condition-chip:hover { border-color:var(--magenta-light); color:var(--magenta-light); }
+.condition-chip.active { background:rgba(192,38,211,0.22); color:var(--magenta-light); border-color:var(--magenta-light); box-shadow:0 0 8px var(--magenta-glow); }
+
+/* ── NOTES ── */
+.notes-tabs { display:flex; gap:0; margin-bottom:0; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.notes-tab { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.7rem; cursor:pointer; border:1px solid rgba(94,242,58,0.1); border-bottom:none; background:rgba(94,242,58,0.02); color:var(--text-dim); transition:all 0.2s; margin-bottom:-1px; }
+.notes-tab:hover { color:var(--neon); }
+.notes-tab.active { background:var(--panel); color:var(--neon); border-color:var(--border); border-bottom:1px solid var(--panel); text-shadow:0 0 6px var(--neon-glow); }
+.notes-panel { display:none; padding-top:0.8rem; }
+.notes-panel.active { display:block; }
+
+/* ── SKILLS ── */
+.slots-panel { background:linear-gradient(135deg,rgba(245,197,24,0.08),rgba(94,242,58,0.04)); border:1px solid rgba(245,197,24,0.25); padding:0.6rem 1rem; margin-bottom:1rem; }
+.slots-info { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; }
+.slots-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.5rem; }
+.slot-box { background:rgba(94,242,58,0.03); border:1px dashed rgba(94,242,58,0.18); padding:0.6rem; display:flex; flex-direction:column; gap:0.3rem; transition:border-color 0.2s; }
+.slot-box.unlocked { border-style:solid; border-color:rgba(94,242,58,0.28); }
+.slot-box.locked { opacity:0.35; pointer-events:none; }
+.slot-label { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.12em; color:var(--magenta-light); text-transform:uppercase; }
+.skill-xp-row { display:flex; gap:0.4rem; align-items:center; }
+.skill-xp-row input { width:70px; font-size:0.82rem; }
+.skill-xp-bar-wrap { margin-top:0.2rem; }
+.skill-lvl-badge { font-family:'Metal Mania',cursive; font-size:0.9rem; color:var(--neon); min-width:24px; text-align:center; text-shadow:0 0 6px var(--neon-glow); }
+.passive-row { background:rgba(192,38,211,0.04); border:1px solid rgba(192,38,211,0.18); padding:0.5rem 0.6rem; display:flex; gap:0.4rem; align-items:center; margin-bottom:0.4rem; }
+.passive-row input[type="text"] { flex:1; }
+.passive-lvl { font-family:'Metal Mania',cursive; font-size:0.85rem; color:var(--magenta-light); min-width:22px; text-align:center; }
+
+/* ── INVENTORY ── */
+.item-card { background:var(--panel2); border:1px solid rgba(94,242,58,0.15); padding:0.6rem; margin-bottom:0.4rem; display:flex; gap:0.8rem; align-items:flex-start; transition:border-color 0.2s; }
+.item-card:hover { border-color:rgba(94,242,58,0.35); }
+.item-card.equipped { border-color:var(--gold); box-shadow:0 0 8px rgba(245,197,24,0.2); }
+.item-info { flex:1; }
+.item-name { font-family:'Cinzel',serif; font-size:0.85rem; color:var(--text); font-weight:600; }
+.item-meta { font-size:0.68rem; color:var(--text-dim); margin-top:0.15rem; }
+.item-desc { font-size:0.75rem; color:var(--text-dim); margin-top:0.2rem; line-height:1.4; }
+.rarity-comum { color:#aaa; }
+.rarity-incomum { color:#4caf50; }
+.rarity-raro { color:#2196f3; }
+.rarity-muito-raro { color:#9c27b0; }
+.rarity-lendário { color:#ff9800; }
+.rarity-artefato { color:#f44336; }
+.item-actions { display:flex; flex-direction:column; gap:0.3rem; }
+
+/* ── REPUTATION ── */
+.rep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.5rem; }
+.rep-box { background:var(--panel2); border:1px solid rgba(245,197,24,0.2); padding:0.7rem; display:flex; flex-direction:column; gap:0.35rem; }
+.rep-faction { font-family:'Cinzel',serif; font-size:0.78rem; color:var(--gold); font-weight:600; }
+.rep-title { font-family:'Share Tech Mono',monospace; font-size:0.75rem; color:var(--text); }
+
+/* ── PRESTIGE ── */
+.prestige-display { text-align:center; padding:2rem; background:linear-gradient(135deg,rgba(245,197,24,0.1),rgba(192,38,211,0.08)); border:1px solid rgba(245,197,24,0.3); margin-bottom:1rem; }
+.prestige-count-big { font-family:'Metal Mania',cursive; font-size:4rem; color:var(--gold); text-shadow:0 0 20px rgba(245,197,24,0.5),0 0 40px rgba(245,197,24,0.3); }
+.prestige-bonuses { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; margin-bottom:1rem; }
+.bonus-item { background:var(--panel2); border:1px solid rgba(245,197,24,0.2); padding:0.7rem; display:flex; justify-content:space-between; align-items:center; font-family:'Share Tech Mono',monospace; font-size:0.8rem; }
+.bonus-item span:last-child { color:var(--gold); font-family:'Metal Mania',cursive; font-size:1rem; }
+
+/* ── PLAYER SELECTOR ── */
+.player-selector { display:flex; gap:0.4rem; flex-wrap:wrap; }
+.player-btn { background:transparent; border:1px solid rgba(94,242,58,0.15); color:rgba(94,242,58,0.35); font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.1em; padding:0.3rem 0.8rem; cursor:pointer; transition:all 0.2s; }
+.player-btn.active { border-color:var(--neon); color:var(--neon); background:rgba(94,242,58,0.08); box-shadow:0 0 8px rgba(94,242,58,0.1); }
+
+/* ── MODALS ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:500; display:none; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--panel); border:1px solid var(--border); width:90%; max-width:460px; max-height:85vh; overflow-y:auto; animation:modalIn 0.2s ease; }
+@keyframes modalIn { from{transform:scale(0.9) translateY(20px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+.modal-header { background:linear-gradient(135deg,rgba(192,38,211,0.15),rgba(94,242,58,0.05)); padding:0.7rem 1rem; font-family:'Metal Mania',cursive; font-size:0.9rem; color:var(--neon); display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-m); }
+.modal-close { background:transparent; border:none; color:var(--text-dim); font-size:1rem; cursor:pointer; padding:0 0.2rem; transition:color 0.2s; }
+.modal-close:hover { color:#ff4444; }
+.modal-body { padding:1rem; display:flex; flex-direction:column; gap:0.7rem; }
+.modal-footer { padding:0.8rem 1rem; display:flex; gap:0.5rem; justify-content:flex-end; border-top:1px solid var(--border); }
+
+/* ── RACES/CLASSES LISTS ── */
+.db-item { background:var(--panel2); border:1px solid rgba(94,242,58,0.12); padding:0.5rem 0.7rem; margin-bottom:0.3rem; display:flex; justify-content:space-between; align-items:center; }
+.db-item-name { font-family:'Cinzel',serif; font-size:0.78rem; color:var(--neon); }
+.db-item-meta { font-size:0.65rem; color:var(--text-dim); }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:2rem; right:2rem; background:var(--panel); border:1px solid var(--neon); color:var(--neon); font-family:'Metal Mania',cursive; font-size:0.8rem; letter-spacing:0.1em; padding:0.7rem 1.2rem; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s ease; box-shadow:0 0 20px var(--neon-glow); }
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); box-shadow:5px 0 30px rgba(0,0,0,0.8); }
+  .topbar { display:flex; }
+  .main-content { margin-left:0; padding:0.8rem; margin-top:50px; }
+  .dash-grid { grid-template-columns:1fr; }
+  .attrs-grid { grid-template-columns:repeat(3,1fr); }
+  .field-grid.cols-3 { grid-template-columns:1fr 1fr; }
+  .conditions-grid { grid-template-columns:repeat(3,1fr); }
+  .prestige-bonuses { grid-template-columns:1fr; }
+  .attrs-mini-grid { grid-template-columns:repeat(3,1fr); }
+}
+@media(max-width:480px){
+  .field-grid.cols-2, .field-grid.cols-3 { grid-template-columns:1fr; }
+  .attrs-grid { grid-template-columns:repeat(2,1fr); }
+  .conditions-grid { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ── XP DISPLAY IMPROVEMENTS ── */
+.xp-values-big { font-family:'Metal Mania',cursive; font-size:1.3rem; color:var(--magenta-light); margin-bottom:0.4rem; text-shadow:0 0 8px var(--magenta-glow); }
+.xp-sep { color:var(--text-dim); font-size:1rem; }
+.xp-unit { font-family:'Cinzel',serif; font-size:0.7rem; color:var(--text-dim); letter-spacing:0.1em; }
+.xp-bar-big { height:12px !important; }
+.xp-pct-label { font-family:'Share Tech Mono',monospace; font-size:0.7rem; color:rgba(224,64,251,0.7); text-align:right; margin-top:0.15rem; }
+
+/* ── PORTRAIT FRAME FIX ── */
+.portrait-frame { position:relative !important; }
+
+/* ── PACIFIST SYSTEM ── */
+.pacifist-card { border-color:rgba(94,242,58,0.35) !important; }
+.pacifist-card::before { background:linear-gradient(90deg,transparent,var(--neon),transparent) !important; }
+.pacifist-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:0.8rem; }
+.pacifist-label { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); margin-bottom:0.3rem; }
+.pacifist-rep-display { display:flex; align-items:baseline; gap:0.3rem; }
+.pacifist-stats-section { display:flex; flex-direction:column; gap:0.5rem; }
+.pacifist-stat-row { display:flex; justify-content:space-between; align-items:center; padding:0.2rem 0; border-bottom:1px solid rgba(94,242,58,0.07); }
+.pacifist-stat-label { font-family:'Share Tech Mono',monospace; font-size:0.72rem; color:var(--text-dim); }
+.pacifist-stat-val { font-family:'Metal Mania',cursive; font-size:0.95rem; color:var(--gold); text-shadow:0 0 6px rgba(245,197,24,0.5); }
+.rep-benefit { font-family:'Share Tech Mono',monospace; font-size:0.72rem; color:var(--neon); padding:0.2rem 0; border-bottom:1px solid rgba(94,242,58,0.07); }
+.rep-table { margin-top:0.5rem; font-family:'Share Tech Mono',monospace; font-size:0.72rem; }
+.rep-table-row { display:grid; grid-template-columns:60px 70px 1fr; gap:0.5rem; padding:0.18rem 0.3rem; border-bottom:1px solid rgba(94,242,58,0.06); }
+.rep-table-row.header { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.1em; color:var(--magenta-light); text-transform:uppercase; }
+
+/* ── PLAYER SELECTOR IMPROVED ── */
+.player-selector { display:flex; gap:0.35rem; flex-wrap:wrap; }
+.player-btn { background:transparent; border:1px solid rgba(94,242,58,0.15); color:rgba(94,242,58,0.35); font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.08em; padding:0.28rem 0.6rem; cursor:pointer; transition:all 0.2s; }
+.player-btn.active { border-color:var(--neon); color:var(--neon); background:rgba(94,242,58,0.08); box-shadow:0 0 8px rgba(94,242,58,0.1); }
+
+/* ── PACIFIST RESPONSIVE ── */
+@media(max-width:600px){
+  .pacifist-grid { grid-template-columns:1fr; }
+}
+
+/* ── LEVEL CARD IMPROVEMENT ── */
+.level-card .dash-card-header { background:linear-gradient(135deg,rgba(94,242,58,0.18),rgba(192,38,211,0.08)); }
+
+/* ── RESOURCES NEW SYSTEM ── */
+.resource-label-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.2rem; }
+.resource-formula { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text-dim); }
+.resource-max-val { font-family:'Metal Mania',cursive; font-size:1.5rem; color:var(--neon); text-shadow:0 0 8px var(--neon-glow); }
+.bar-def { background:linear-gradient(90deg,#1a3a6b,#4fc3f7); box-shadow:0 0 8px rgba(79,195,247,0.5); }
+
+/* SECONDARY STATS */
+.secondary-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:0.4rem; margin-top:0.8rem; padding-top:0.6rem; border-top:1px solid var(--border); }
+.sec-stat { background:var(--panel2); border:1px solid rgba(94,242,58,0.1); padding:0.35rem 0.4rem; text-align:center; }
+.sec-lbl { font-family:'Cinzel',serif; font-size:0.45rem; letter-spacing:0.08em; color:var(--text-dim); text-transform:uppercase; display:block; margin-bottom:0.1rem; }
+.sec-val { font-family:'Metal Mania',cursive; font-size:0.9rem; color:var(--neon); text-shadow:0 0 6px var(--neon-glow); }
+
+@media(max-width:480px){
+  .secondary-stats { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ── DB ITEM BONUS ── */
+.db-item { align-items:flex-start !important; }
+.db-item-bonus { font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:var(--gold); margin-top:0.15rem; letter-spacing:0.05em; }
+
+/* ── MODAL SECTION LABEL ── */
+.modal-section-label { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--magenta-light); margin:0.6rem 0 0.3rem; padding-bottom:0.2rem; border-bottom:1px solid var(--border-m); }
+
+/* ══════════════════════════════════════
+   CHARACTER SCREEN — PORTRAIT + QUICK INFO
+══════════════════════════════════════ */
+.char-top-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: start;
+}
+
+/* ── PORTRAIT PANEL ── */
+.char-portrait-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.char-portrait-frame {
+  width: 190px;
+  height: 240px;
+  border: 2px solid var(--neon-dark);
+  background: linear-gradient(145deg, #050510, #0d0d1a);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(94,242,58,0.12), inset 0 0 30px rgba(0,0,0,0.6);
+}
+.char-portrait-frame::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(94,242,58,0.08);
+  pointer-events: none;
+  z-index: 10;
+}
+.char-portrait-frame:hover {
+  border-color: var(--neon);
+  box-shadow: 0 0 30px var(--neon-glow), inset 0 0 20px rgba(0,0,0,0.4);
+}
+
+/* Corner decorations */
+.char-portrait-frame::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    linear-gradient(to right, rgba(94,242,58,0.3) 2px, transparent 2px) top left / 16px 16px no-repeat,
+    linear-gradient(to bottom, rgba(94,242,58,0.3) 2px, transparent 2px) top left / 16px 16px no-repeat,
+    linear-gradient(to left, rgba(94,242,58,0.3) 2px, transparent 2px) bottom right / 16px 16px no-repeat,
+    linear-gradient(to top, rgba(94,242,58,0.3) 2px, transparent 2px) bottom right / 16px 16px no-repeat;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.char-portrait-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  z-index: 2;
+}
+.char-portrait-icon {
+  font-size: 3rem;
+  opacity: 0.2;
+  filter: drop-shadow(0 0 10px var(--neon));
+  animation: eyePulse 3s ease-in-out infinite;
+}
+.char-portrait-hint {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(94,242,58,0.25);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.char-portrait-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 190px;
+}
+
+/* ── QUICK INFO PANEL ── */
+.char-quick-info {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 1.2rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.char-quick-info::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon), transparent);
+  opacity: 0.4;
+}
+.char-quick-info::after {
+  content: '👁';
+  position: absolute;
+  bottom: 0.8rem;
+  right: 1rem;
+  font-size: 3rem;
+  opacity: 0.04;
+  filter: drop-shadow(0 0 10px var(--neon));
+}
+
+.char-quick-name {
+  font-family: 'Metal Mania', cursive;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  color: var(--neon);
+  text-shadow: 0 0 12px var(--neon-glow);
+  line-height: 1.2;
+  margin-bottom: 0.3rem;
+  word-break: break-word;
+}
+.char-quick-meta {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  margin-bottom: 0.8rem;
+}
+.char-quick-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(94,242,58,0.06);
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.8rem;
+  margin-bottom: 0.8rem;
+}
+.char-quick-lbl {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.char-quick-val {
+  font-family: 'Metal Mania', cursive;
+  font-size: 1.4rem;
+  color: var(--neon);
+  text-shadow: 0 0 8px var(--neon-glow);
+  line-height: 1;
+}
+.char-quick-resources {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.char-quick-res {
+  background: var(--panel2);
+  border: 1px solid rgba(94,242,58,0.15);
+  padding: 0.4rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 70px;
+}
+.cqr-icon { font-size: 1rem; }
+.cqr-val {
+  font-family: 'Metal Mania', cursive;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-shadow: 0 0 6px var(--neon-glow);
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width: 600px){
+  .char-top-layout {
+    grid-template-columns: 1fr;
+  }
+  .char-portrait-frame {
+    width: 100%;
+    height: 220px;
+  }
+  .char-portrait-panel { width: 100%; }
+  .char-portrait-actions { width: 100%; }
+}
+
+/* ── RESISTÊNCIA BAR ── */
+.bar-resist { background: linear-gradient(90deg,#4a2a0a,#cd7f32); box-shadow:0 0 8px rgba(205,127,50,0.5); }
+
+/* ── REPUTATION SYSTEM NEW ── */
+.rep-input-row { display:flex; gap:1.5rem; align-items:flex-start; flex-wrap:wrap; margin-bottom:1rem; }
+.rep-mult-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-top:0.8rem; }
+.rep-mult-box { background:var(--panel2); border:1px solid rgba(94,242,58,0.2); padding:0.8rem; text-align:center; position:relative; overflow:hidden; }
+.rep-mult-box::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--neon),transparent); opacity:0.5; }
+.rep-mult-gold { border-color:rgba(245,197,24,0.3) !important; }
+.rep-mult-gold::before { background:linear-gradient(90deg,transparent,var(--gold),transparent) !important; }
+.rep-mult-label { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); margin-bottom:0.3rem; }
+.rep-mult-val { font-family:'Metal Mania',cursive; font-size:2rem; color:var(--neon); text-shadow:0 0 12px var(--neon-glow); line-height:1; }
+.rep-mult-gold .rep-mult-val { color:var(--gold); text-shadow:0 0 12px rgba(245,197,24,0.5); }
+.rep-mult-formula { font-family:'Share Tech Mono',monospace; font-size:0.6rem; color:var(--text-dim); margin-top:0.2rem; }
+.rep-mult-range { font-family:'Cinzel',serif; font-size:0.5rem; color:var(--magenta-light); margin-top:0.1rem; letter-spacing:0.1em; }
+.rep-table-row { grid-template-columns:50px 60px 60px 1fr !important; }
+@media(max-width:480px){ .rep-mult-grid { grid-template-columns:1fr; } }
+
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SIDEBAR NAV -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="eye-deco">👁</span>
+    <span class="sidebar-title">ABLUBE</span>
+    <span class="eye-deco">👁</span>
+  </div>
+  <div class="sidebar-player">
+    <div id="nav-char-name">— Sem Nome —</div>
+    <div id="nav-char-info" style="font-size:0.6rem;color:var(--text-dim)"></div>
+  </div>
+  <ul class="nav-list">
+    <li class="nav-item active" data-screen="dashboard" onclick="showScreen('dashboard')">
+      <span class="nav-icon">🏠</span><span>Dashboard</span>
+    </li>
+    <li class="nav-item" data-screen="character" onclick="showScreen('character')">
+      <span class="nav-icon">📜</span><span>Personagem</span>
+    </li>
+    <li class="nav-item" data-screen="attributes" onclick="showScreen('attributes')">
+      <span class="nav-icon">⚡</span><span>Atributos</span>
+    </li>
+    <li class="nav-item" data-screen="skills" onclick="showScreen('skills')">
+      <span class="nav-icon">✨</span><span>Habilidades</span>
+    </li>
+    <li class="nav-item" data-screen="inventory" onclick="showScreen('inventory')">
+      <span class="nav-icon">🎒</span><span>Inventário</span>
+    </li>
+    <li class="nav-item" data-screen="reputation" onclick="showScreen('reputation')">
+      <span class="nav-icon">⭐</span><span>Reputação</span>
+    </li>
+    <li class="nav-item" data-screen="prestige" onclick="showScreen('prestige')">
+      <span class="nav-icon">🏆</span><span>Prestígio</span>
+    </li>
+    <li class="nav-item" data-screen="settings" onclick="showScreen('settings')">
+      <span class="nav-icon">⚙️</span><span>Config.</span>
+    </li>
+  </ul>
+  <div class="sidebar-actions">
+    <button class="btn-sm" onclick="saveChar()">💾 Salvar</button>
+  </div>
+</nav>
+
+<!-- MOBILE TOPBAR -->
+<div class="topbar" id="topbar">
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <span class="topbar-title" id="topbar-title">Dashboard</span>
+  <button class="menu-btn" onclick="saveChar()">💾</button>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="main-content" id="main-content">
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <section class="screen active" id="screen-dashboard">
+    <div class="screen-header"><h1>👁 Dashboard</h1></div>
+    <div class="dash-grid">
+      <!-- Identity Card -->
+      <div class="dash-card identity-card">
+        <div class="dash-card-header">Identidade</div>
+        <div class="identity-layout">
+          <div class="portrait-area">
+            <div class="portrait-frame" style="position:relative">
+              <input type="file" id="portrait-input" accept="image/*" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;z-index:10;font-size:0"/>
+              <img id="portrait-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:5"/>
+              <div class="portrait-ph" id="portrait-ph" style="position:relative;z-index:1">👁</div>
+              <div class="portrait-hint" id="portrait-hint" style="position:relative;z-index:1">Clique para<br/>adicionar arte</div>
+            </div>
+            <button class="btn-sm" style="margin-top:0.4rem;font-size:0.5rem;width:80px" onclick="removePortrait()">✕ Remover</button>
+          </div>
+          <div class="identity-info">
+            <div class="char-name-big" id="dash-char-name">— Sem Nome —</div>
+            <div class="char-meta" id="dash-char-meta">Sem classe • Sem raça</div>
+            <div class="char-prestige-badge" id="dash-prestige-badge" style="display:none">🏆 Prestígio <span id="dash-prestige-count">0</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Level Card -->
+      <div class="dash-card level-card">
+        <div class="dash-card-header">Nível &amp; XP</div>
+        <div class="level-display">
+          <div class="level-circle-big">
+            <span class="level-lbl">Nível</span>
+            <span class="level-val" id="dash-level">1</span>
+          </div>
+          <div class="xp-section">
+            <div class="xp-label">Experiência</div>
+            <div class="xp-values-big">
+              <span id="dash-xp">0</span>
+              <span class="xp-sep"> / </span>
+              <span id="dash-xp-next">100</span>
+              <span class="xp-unit"> XP</span>
+            </div>
+            <div class="bar-track xp-bar-big"><div class="bar-fill bar-xp" id="dash-xp-bar" style="width:0%"></div></div>
+            <div class="xp-pct-label" id="xp-pct-label">0%</div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.6rem;flex-wrap:wrap">
+              <button class="btn-sm" onclick="openXpModal()">⚡ Adicionar XP</button>
+              <button class="btn-sm btn-m" onclick="openLevelModal()">✏️ Nível</button>
+            </div>
+            <!-- Hidden real inputs -->
+            <input type="hidden" id="char-level" value="1" oninput="onLevelChange();autoSave()"/>
+            <input type="hidden" id="char-xp" value="0" oninput="updateXpBar();autoSave()"/>
+          </div>
+        </div>
+      </div>
+      <!-- HP / Resources -->
+      <div class="dash-card resources-card">
+        <div class="dash-card-header">Status</div>
+        <div class="resources-grid">
+          <!-- VIDA -->
+          <div class="resource-item">
+            <div class="resource-label-row">
+              <span class="resource-label">❤️ Vida</span>
+              <span class="resource-formula" id="hp-formula">50 + CON×5</span>
+            </div>
+            <div class="resource-inputs">
+              <input type="number" id="hp-cur" value="50" min="0" oninput="updateBar('hp');autoSave()"/>
+              <span>/</span>
+              <span class="resource-max-val" id="hp-max">50</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill bar-hp" id="bar-hp" style="width:100%"></div></div>
+          </div>
+          <!-- MANA -->
+          <div class="resource-item">
+            <div class="resource-label-row">
+              <span class="resource-label">🔷 Mana</span>
+              <span class="resource-formula" id="mp-formula">25 + INT×5</span>
+            </div>
+            <div class="resource-inputs">
+              <input type="number" id="mp-cur" value="25" min="0" oninput="updateBar('mp');autoSave()"/>
+              <span>/</span>
+              <span class="resource-max-val" id="mp-max">25</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill bar-mp" id="bar-mp" style="width:100%"></div></div>
+          </div>
+          <!-- RESISTÊNCIA -->
+          <div class="resource-item">
+            <div class="resource-label-row">
+              <span class="resource-label">🪨 Resistência</span>
+              <span class="resource-formula" id="resist-formula">10 + CON</span>
+            </div>
+            <div class="resource-inputs">
+              <span class="resource-max-val" id="resist-val">10</span>
+              <span style="font-size:0.7rem;color:var(--text-dim);margin-left:0.3rem">pts</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill bar-resist" id="bar-resist" style="width:10%"></div></div>
+          </div>
+          <!-- DEFESA -->
+          <div class="resource-item">
+            <div class="resource-label-row">
+              <span class="resource-label">🛡️ Defesa</span>
+              <span class="resource-formula" id="def-formula">Equip. + Hab.</span>
+            </div>
+            <div class="resource-inputs">
+              <input type="number" id="defesa-val" value="0" min="0"
+                oninput="calcResources();autoSave()"
+                title="Bônus de armaduras, escudos e habilidades"/>
+              <span style="font-size:0.7rem;color:var(--text-dim)">pts</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill bar-def" id="bar-def" style="width:0%"></div></div>
+          </div>
+        </div>
+        <!-- SECONDARY STATS -->
+        <div class="secondary-stats">
+          <div class="sec-stat"><span class="sec-lbl">⚔️ Dano Fís.</span><span class="sec-val" id="sec-dano-fis">5</span></div>
+          <div class="sec-stat"><span class="sec-lbl">✨ Dano Mag.</span><span class="sec-val" id="sec-dano-mag">0</span></div>
+          <div class="sec-stat"><span class="sec-lbl">⚡ Velocidade</span><span class="sec-val" id="sec-init">0</span></div>
+          <div class="sec-stat"><span class="sec-lbl">🎯 Crítico</span><span class="sec-val" id="sec-crit">0%</span></div>
+        </div>
+      </div>
+      <!-- Attributes Summary -->
+      <div class="dash-card attrs-summary-card">
+        <div class="dash-card-header">Atributos <span class="pts-badge" id="dash-pts-badge">0 pts</span></div>
+        <div class="attrs-mini-grid" id="attrs-mini-grid"></div>
+      </div>
+      <!-- Combat -->
+      <div class="dash-card combat-card">
+        <div class="dash-card-header">Combate</div>
+        <div class="combat-stats">
+          <div class="combat-stat"><div class="c-lbl">❤️ Vida</div><div class="c-val" id="stat-hp-disp">50</div></div>
+          <div class="combat-stat"><div class="c-lbl">🔷 Mana</div><div class="c-val" id="stat-mp-disp">25</div></div>
+          <div class="combat-stat"><div class="c-lbl">🛡️ Defesa</div><div class="c-val" id="stat-def-disp">0</div></div>
+          <div class="combat-stat"><div class="c-lbl">🪨 Resist.</div><div class="c-val" id="stat-res-disp">10</div></div>
+          <div class="combat-stat"><div class="c-lbl">⚡ Inic.</div><div class="c-val" id="stat-init-disp">0</div></div>
+          <div class="combat-stat"><div class="c-lbl">Prof.</div><div class="c-val" id="stat-prof">+2</div></div>
+        </div>
+      </div>
+      <!-- Dice -->
+      <div class="dash-card dice-card">
+        <div class="dash-card-header">🎲 Dados</div>
+        <div class="dice-row">
+          <button class="dice-btn" onclick="rollDice(4)">D4</button>
+          <button class="dice-btn" onclick="rollDice(6)">D6</button>
+          <button class="dice-btn" onclick="rollDice(8)">D8</button>
+          <button class="dice-btn" onclick="rollDice(10)">D10</button>
+          <button class="dice-btn" onclick="rollDice(12)">D12</button>
+          <button class="dice-btn" onclick="rollDice(20)">D20</button>
+          <button class="dice-btn" onclick="rollDice(100)">D%</button>
+        </div>
+        <div class="dice-result-row">
+          <span class="dice-result" id="dice-result">—</span>
+          <span class="dice-history" id="dice-history"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PERSONAGEM ═══════════ -->
+  <section class="screen" id="screen-character">
+    <div class="screen-header"><h1>📜 Personagem</h1></div>
+
+    <!-- PORTRAIT + IDENTITY SPLIT -->
+    <div class="char-top-layout">
+
+      <!-- LEFT: PORTRAIT -->
+      <div class="char-portrait-panel">
+        <div class="char-portrait-frame" id="char-portrait-frame" onclick="document.getElementById('char-portrait-input').click()">
+          <img id="char-portrait-img" src="" style="display:none"/>
+          <div class="char-portrait-placeholder" id="char-portrait-ph">
+            <div class="char-portrait-icon">👁</div>
+            <div class="char-portrait-hint">Toque para<br/>adicionar imagem</div>
+          </div>
+        </div>
+        <input type="file" id="char-portrait-input" accept="image/*"
+          style="display:none"/>
+        <div class="char-portrait-actions">
+          <button class="btn-sm" onclick="document.getElementById('char-portrait-input').click()">🖼️ Galeria / Arquivo</button>
+          <button class="btn-sm" style="color:#ff4444;border-color:rgba(255,68,68,0.3)" onclick="removeCharPortrait()">✕ Remover</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: QUICK INFO -->
+      <div class="char-quick-info">
+        <div class="char-quick-name" id="char-quick-name">— Sem Nome —</div>
+        <div class="char-quick-meta" id="char-quick-meta">Sem classe • Sem raça</div>
+        <div class="char-quick-level">
+          <span class="char-quick-lbl">Nível</span>
+          <span class="char-quick-val" id="char-quick-level">1</span>
+        </div>
+        <div class="char-quick-resources">
+          <div class="char-quick-res">
+            <span class="cqr-icon">❤️</span>
+            <span class="cqr-val" id="cq-hp">100</span>
+          </div>
+          <div class="char-quick-res">
+            <span class="cqr-icon">💙</span>
+            <span class="cqr-val" id="cq-mp">50</span>
+          </div>
+          <div class="char-quick-res">
+            <span class="cqr-icon">🛡️</span>
+            <span class="cqr-val" id="cq-def">10</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /char-top-layout -->
+
+    <div class="card">
+      <div class="card-header">Identidade</div>
+      <div class="card-body">
+        <div class="field-grid cols-2">
+          <div class="field"><label>Nome</label><input type="text" id="char-name" placeholder="Nome heroico..." oninput="onNameChange();autoSave()"/></div>
+          <div class="field"><label>Divindade / Patrono</label><input type="text" id="char-deity" placeholder="Ex: O Olho..." oninput="autoSave()"/></div>
+        </div>
+        <div class="field-grid cols-3">
+          <div class="field">
+            <label>Classe</label>
+            <select id="char-class" onchange="onClassChange();autoSave()">
+              <option value="">— Escolher —</option>
+            </select>
+          </div>
+          <div class="field"><label>Sub-Classe</label><input type="text" id="char-subclass" placeholder="Ex: Escola da Evocação" oninput="autoSave()"/></div>
+          <div class="field">
+            <label>Raça</label>
+            <select id="char-race" onchange="onRaceChange();autoSave()">
+              <option value="">— Escolher —</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-grid cols-3">
+          <div class="field"><label>Antecedente</label><input type="text" id="char-background" placeholder="Ex: Nobre, Sábio..." oninput="autoSave()"/></div>
+          <div class="field">
+            <label>Alinhamento</label>
+            <select id="char-alignment" onchange="autoSave()">
+              <option value="">— Escolher —</option>
+              <option>Leal e Bom</option><option>Neutro e Bom</option><option>Caótico e Bom</option>
+              <option>Leal e Neutro</option><option>Verdadeiro Neutro</option><option>Caótico e Neutro</option>
+              <option>Leal e Mau</option><option>Neutro e Mau</option><option>Caótico e Mau</option>
+            </select>
+          </div>
+          <div class="field"><label>Idade / Aparência</label><input type="text" id="char-age" placeholder="Ex: 25 anos, cabelo preto..." oninput="autoSave()"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Salvaguardas</div>
+      <div class="card-body">
+        <div id="saves-list"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Condições Ativas</div>
+      <div class="card-body">
+        <div class="conditions-grid" id="conditions-grid"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Anotações</div>
+      <div class="card-body">
+        <div class="notes-tabs">
+          <div class="notes-tab active" onclick="switchTab('tracos')">Traços</div>
+          <div class="notes-tab" onclick="switchTab('ideais')">Ideais</div>
+          <div class="notes-tab" onclick="switchTab('vinculos')">Vínculos</div>
+          <div class="notes-tab" onclick="switchTab('fraquezas')">Fraquezas</div>
+          <div class="notes-tab" onclick="switchTab('historia')">História</div>
+          <div class="notes-tab" onclick="switchTab('magias')">Magias</div>
+        </div>
+        <div class="notes-panel active" id="tab-tracos"><textarea id="note-tracos" oninput="autoSave()" placeholder="Traços de personalidade..."></textarea></div>
+        <div class="notes-panel" id="tab-ideais"><textarea id="note-ideais" oninput="autoSave()" placeholder="O que seu personagem acredita..."></textarea></div>
+        <div class="notes-panel" id="tab-vinculos"><textarea id="note-vinculos" oninput="autoSave()" placeholder="Pessoas, lugares e coisas..."></textarea></div>
+        <div class="notes-panel" id="tab-fraquezas"><textarea id="note-fraquezas" oninput="autoSave()" placeholder="Defeitos e pontos fracos..."></textarea></div>
+        <div class="notes-panel" id="tab-historia"><textarea id="note-historia" oninput="autoSave()" placeholder="A história do personagem..." style="min-height:160px"></textarea></div>
+        <div class="notes-panel" id="tab-magias"><textarea id="note-magias" oninput="autoSave()" placeholder="Magias, slots e conjurações..." style="min-height:160px"></textarea></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ ATRIBUTOS ═══════════ -->
+  <section class="screen" id="screen-attributes">
+    <div class="screen-header"><h1>⚡ Atributos</h1></div>
+    <div class="skill-points-panel">
+      <div>
+        <div class="sp-title">✨ Pontos de Atributo</div>
+        <div class="sp-sub">+3 a cada 5 níveis • limite por faixa</div>
+      </div>
+      <div class="sp-count" id="sp-count">0</div>
+      <div class="sp-stats">
+        <div>Ganhos: <strong id="sp-earned">0</strong></div>
+        <div>Gastos: <strong id="sp-spent">0</strong></div>
+        <div style="color:#f5c518">Limite: <strong id="sp-limit">15</strong></div>
+      </div>
+    </div>
+    <div class="attrs-grid" id="attrs-grid"></div>
+    <div class="card" style="margin-top:1rem">
+      <div class="card-header">Histórico de Distribuição</div>
+      <div class="card-body">
+        <div id="attr-history" style="font-size:0.8rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;max-height:150px;overflow-y:auto">Nenhum ponto distribuído ainda.</div>
+        <button class="btn-secondary" style="margin-top:0.5rem;font-size:0.7rem" onclick="clearAttrHistory()">Limpar Histórico</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HABILIDADES ═══════════ -->
+  <section class="screen" id="screen-skills">
+    <div class="screen-header"><h1>✨ Habilidades</h1></div>
+    <div class="slots-panel">
+      <div class="slots-info">
+        <span>🎯 Slots: <strong id="slots-count">0</strong></span>
+        <span style="color:var(--text-dim);font-size:0.7rem">Nv.10=2 • +1 a cada 10 níveis</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Habilidades Ativas (Slots)</div>
+      <div class="card-body">
+        <div class="slots-grid" id="slots-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Habilidades Passivas <button class="btn-sm" style="float:right" onclick="addPassive()">+ Add</button></div>
+      <div class="card-body">
+        <div id="passives-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ INVENTÁRIO ═══════════ -->
+  <section class="screen" id="screen-inventory">
+    <div class="screen-header"><h1>🎒 Inventário</h1></div>
+    <div class="card">
+      <div class="card-header">Moedas &amp; Carga</div>
+      <div class="card-body">
+        <div class="field-grid cols-3" style="margin-bottom:0.8rem">
+          <div class="field"><label>🟡 Ouro</label><input type="number" id="gold" value="0" min="0" oninput="autoSave()"/></div>
+          <div class="field"><label>⚪ Prata</label><input type="number" id="silver" value="0" min="0" oninput="autoSave()"/></div>
+          <div class="field"><label>🟤 Cobre</label><input type="number" id="copper" value="0" min="0" oninput="autoSave()"/></div>
+        </div>
+        <div class="carga-bar-panel">
+          <div class="carga-info">
+            <span class="carga-label">📦 Capacidade de Carga</span>
+            <span class="carga-values">
+              <input type="number" id="carga-atual" value="0" min="0" oninput="updateCargaBar();autoSave()"
+                style="width:55px;text-align:center;font-size:1rem"/>
+              <span style="color:var(--text-dim)">/</span>
+              <span id="carga-max" style="font-family:'Metal Mania',cursive;font-size:1rem;color:var(--neon)">20</span>
+              <span style="font-size:0.7rem;color:var(--text-dim)">kg</span>
+            </span>
+          </div>
+          <div class="bar-track" style="height:10px">
+            <div class="bar-fill" id="bar-carga" style="width:0%;background:linear-gradient(90deg,#1a6b1a,#5ef23a);box-shadow:0 0 6px rgba(94,242,58,0.4)"></div>
+          </div>
+          <div style="font-family:'Cinzel',serif;font-size:0.52rem;color:var(--text-dim);margin-top:0.2rem">
+            Fórmula: 20 + (FOR × 5) kg
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Itens <button class="btn-sm" style="float:right" onclick="openItemModal()">+ Adicionar</button></div>
+      <div class="card-body">
+        <div id="inventory-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ REPUTAÇÃO ═══════════ -->
+  <section class="screen" id="screen-reputation">
+    <div class="screen-header"><h1>⭐ Reputação</h1></div>
+
+    <div id="pacifist-panel">
+      <div class="card pacifist-card">
+        <div class="card-header" style="background:linear-gradient(135deg,rgba(245,197,24,0.18),rgba(192,38,211,0.08));color:var(--gold)">⭐ Progresso de Reputação</div>
+        <div class="card-body">
+
+          <!-- INPUT + BARRA -->
+          <div class="rep-input-row">
+            <div>
+              <div class="pacifist-label">Reputação</div>
+              <div style="display:flex;align-items:baseline;gap:0.4rem">
+                <input type="number" id="pacifist-rep" value="0" min="0" max="500"
+                  oninput="updatePacifistPanel();autoSave()"
+                  style="font-family:'Metal Mania',cursive;font-size:2.2rem;color:var(--gold);background:transparent;border:none;border-bottom:2px solid var(--gold);width:95px;text-align:center"/>
+                <span style="color:var(--text-dim);font-size:0.9rem">/ 500</span>
+              </div>
+              <div class="bar-track" style="margin:0.5rem 0;height:12px">
+                <div class="bar-fill" id="pacifist-rep-bar"
+                  style="width:0%;background:linear-gradient(90deg,#f5c518,#e040fb);box-shadow:0 0 8px rgba(245,197,24,0.5)"></div>
+              </div>
+              <div style="font-family:'Cinzel',serif;font-size:0.6rem;color:var(--text-dim)">
+                🏅 Título: <span id="pacifist-title-val" style="color:var(--gold)">Desconhecido</span>
+              </div>
+            </div>
+            <div>
+              <div class="pacifist-label">Missões Concluídas</div>
+              <input type="number" id="pacifist-missions" value="0" min="0" oninput="autoSave()"
+                style="font-family:'Metal Mania',cursive;font-size:1.6rem;color:var(--neon);background:transparent;border:none;border-bottom:2px solid var(--border);width:80px;text-align:center"/>
+            </div>
+            <div>
+              <div class="pacifist-label">💰 Recompensa de Missão</div>
+              <div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.3rem">
+                <input type="number" id="rep-recompensa" value="0" min="0" oninput="autoSave()"
+                  style="font-family:'Metal Mania',cursive;font-size:1.4rem;color:var(--gold);background:transparent;border:none;border-bottom:2px solid rgba(245,197,24,0.4);width:80px;text-align:center"/>
+                <span style="font-size:0.7rem;color:var(--text-dim)">ouro</span>
+              </div>
+              <div style="font-family:'Cinzel',serif;font-size:0.52rem;color:var(--text-dim);margin-top:0.2rem">Personalizável pelo mestre</div>
+            </div>
+          </div>
+
+          <!-- MULTIPLICADORES -->
+          <div class="rep-mult-grid">
+            <div class="rep-mult-box">
+              <div class="rep-mult-label">⚡ Mult. XP</div>
+              <div class="rep-mult-val" id="pacifist-mult">1x</div>
+              <div class="rep-mult-formula">1 + (Rep÷500 × 14)</div>
+              <div class="rep-mult-range">1x → 15x</div>
+            </div>
+            <div class="rep-mult-box rep-mult-gold">
+              <div class="rep-mult-label">💰 Mult. Ouro</div>
+              <div class="rep-mult-val" id="pacifist-gold-mult">1x</div>
+              <div class="rep-mult-formula">1 + (Rep÷500 × 24)</div>
+              <div class="rep-mult-range">1x → 25x</div>
+            </div>
+          </div>
+
+          <!-- PRÓXIMO DESBLOQUEIO -->
+          <div id="pacifist-next-unlock" style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--magenta-light);margin-top:0.6rem;padding:0.4rem 0.6rem;background:rgba(192,38,211,0.06);border:1px solid rgba(192,38,211,0.15)"></div>
+
+          <!-- BENEFÍCIOS -->
+          <div style="margin-top:0.8rem">
+            <div style="font-family:'Cinzel',serif;font-size:0.58rem;letter-spacing:0.15em;color:var(--magenta-light);text-transform:uppercase;margin-bottom:0.4rem">Benefícios Desbloqueados</div>
+            <div id="pacifist-benefits"></div>
+          </div>
+
+          <!-- TABELA COLAPSÁVEL -->
+          <details style="margin-top:0.8rem">
+            <summary style="font-family:'Cinzel',serif;font-size:0.65rem;color:var(--neon);cursor:pointer;letter-spacing:0.1em;padding:0.3rem 0">📊 Ver Tabela de Referência</summary>
+            <div class="rep-table" style="margin-top:0.5rem">
+              <div class="rep-table-row header"><span>Rep.</span><span>XP</span><span>Ouro</span><span>Benefício</span></div>
+              <div class="rep-table-row"><span>0</span><span>1x</span><span>1x</span><span>—</span></div>
+              <div class="rep-table-row"><span>50</span><span>2,4x</span><span>3,4x</span><span>10% desconto</span></div>
+              <div class="rep-table-row"><span>100</span><span>3,8x</span><span>5,8x</span><span>Missões exclusivas</span></div>
+              <div class="rep-table-row"><span>150</span><span>5,2x</span><span>8,2x</span><span>—</span></div>
+              <div class="rep-table-row"><span>200</span><span>6,6x</span><span>10,6x</span><span>Hospedagem grátis</span></div>
+              <div class="rep-table-row"><span>250</span><span>8x</span><span>13x</span><span>—</span></div>
+              <div class="rep-table-row"><span>300</span><span>9,4x</span><span>15,4x</span><span>Aliados NPC</span></div>
+              <div class="rep-table-row"><span>350</span><span>10,8x</span><span>17,8x</span><span>—</span></div>
+              <div class="rep-table-row"><span>400</span><span>12,2x</span><span>20,2x</span><span>—</span></div>
+              <div class="rep-table-row"><span>450</span><span>13,6x</span><span>22,6x</span><span>—</span></div>
+              <div class="rep-table-row"><span>500</span><span>15x</span><span>25x</span><span>🏆 Herói do Reino</span></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Facções &amp; Grupos <button class="btn-sm" style="float:right" onclick="addReputation()">+ Add</button></div>
+      <div class="card-body">
+        <div class="rep-grid" id="rep-grid"></div>
+        <div id="rep-empty" style="color:var(--text-dim);font-size:0.85rem;text-align:center;padding:1rem">Nenhuma facção adicionada.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PRESTÍGIO ═══════════ -->
+  <section class="screen" id="screen-prestige">
+    <div class="screen-header"><h1>🏆 Prestígio</h1></div>
+    <div class="prestige-display">
+      <div class="prestige-count-big" id="prestige-count-big">0</div>
+      <div style="font-family:'Cinzel',serif;color:var(--text-dim);font-size:0.8rem;letter-spacing:0.2em">PRESTÍGIOS</div>
+    </div>
+    <div class="prestige-bonuses" id="prestige-bonuses">
+      <div class="bonus-item"><span>📈 Bônus de XP</span><span id="p-xp-bonus">+0%</span></div>
+      <div class="bonus-item"><span>💪 Bônus de Poder</span><span id="p-pow-bonus">+0%</span></div>
+      <div class="bonus-item"><span>📊 Nível Máximo</span><span id="p-max-level">100</span></div>
+    </div>
+    <div id="prestige-btn-area" style="text-align:center;margin-top:1.5rem">
+      <div id="prestige-status" style="font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem"></div>
+      <button class="btn-primary" id="prestige-btn" onclick="doPrestige()" disabled>🏆 Prestigiar</button>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div class="card-header">Histórico de Prestígio</div>
+      <div class="card-body">
+        <div id="prestige-history" style="font-size:0.8rem;color:var(--text-dim);font-family:'Share Tech Mono',monospace;max-height:200px;overflow-y:auto">Nenhum prestígio ainda.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CONFIGURAÇÕES ═══════════ -->
+  <section class="screen" id="screen-settings">
+    <div class="screen-header"><h1>⚙️ Configurações</h1></div>
+    <div class="card">
+      <div class="card-header">Jogadores</div>
+      <div class="card-body">
+        <div class="player-selector" id="playerSelector"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Dados</div>
+      <div class="card-body" style="display:flex;gap:0.6rem;flex-wrap:wrap">
+        <button class="btn-primary" onclick="exportJSON()">📤 Exportar JSON</button>
+        <button class="btn-secondary" onclick="document.getElementById('import-input').click()">📥 Importar JSON</button>
+        <input type="file" id="import-input" accept=".json" style="display:none" onchange="importJSON(event)"/>
+        <button class="btn-danger" onclick="clearChar()">🗑️ Limpar Ficha</button>
+        <button class="btn-secondary" onclick="printChar()">🖨️ Imprimir</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Raças (Banco de Dados)</div>
+      <div class="card-body">
+        <div id="races-list"></div>
+        <button class="btn-sm" style="margin-top:0.5rem" onclick="openRaceModal()">+ Nova Raça</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Classes (Banco de Dados)</div>
+      <div class="card-body">
+        <div id="classes-list"></div>
+        <button class="btn-sm" style="margin-top:0.5rem" onclick="openClassModal()">+ Nova Classe</button>
+      </div>
+    </div>
+  </section>
+
+</main><!-- /main-content -->
+
+<!-- ══════════ MODAIS ══════════ -->
+
+<!-- XP Modal -->
+<div class="modal-overlay" id="modal-xp">
+  <div class="modal">
+    <div class="modal-header">Adicionar XP <button class="modal-close" onclick="closeModal('modal-xp')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Quantidade de XP</label><input type="number" id="xp-add-amount" value="100" min="1"/></div>
+      <div style="font-size:0.75rem;color:var(--text-dim);margin-top:0.5rem">XP atual: <span id="xp-add-current">0</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="addXP()">Confirmar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-xp')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Level Modal -->
+<div class="modal-overlay" id="modal-level">
+  <div class="modal">
+    <div class="modal-header">Definir Nível <button class="modal-close" onclick="closeModal('modal-level')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Nível</label><input type="number" id="level-set-val" value="1" min="1" max="200"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="setLevelManual()">Confirmar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-level')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item Modal -->
+<div class="modal-overlay" id="modal-item">
+  <div class="modal">
+    <div class="modal-header">Item <button class="modal-close" onclick="closeModal('modal-item')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="item-edit-idx" value="-1"/>
+      <div class="field"><label>Nome</label><input type="text" id="item-name" placeholder="Nome do item..."/></div>
+      <div class="field-grid cols-2">
+        <div class="field">
+          <label>Tipo</label>
+          <select id="item-type">
+            <option>Arma</option><option>Armadura</option><option>Consumível</option><option>Ferramenta</option><option>Magia</option><option>Misc</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Raridade</label>
+          <select id="item-rarity">
+            <option>Comum</option><option>Incomum</option><option>Raro</option><option>Muito Raro</option><option>Lendário</option><option>Artefato</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid cols-2">
+        <div class="field"><label>Peso (kg)</label><input type="text" id="item-weight" placeholder="0.5"/></div>
+        <div class="field"><label>Quantidade</label><input type="number" id="item-qty" value="1" min="1"/></div>
+      </div>
+      <div class="field"><label>Descrição</label><textarea id="item-desc" placeholder="Detalhes, dano, efeitos..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="saveItem()">Salvar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-item')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Race Modal -->
+<div class="modal-overlay" id="modal-race">
+  <div class="modal">
+    <div class="modal-header"><span id="modal-race-title">Nova Raça</span> <button class="modal-close" onclick="closeModal('modal-race')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="race-edit-idx" value="-1"/>
+      <div class="field"><label>Nome</label><input type="text" id="race-name" placeholder="Nome da raça..."/></div>
+      <div class="field"><label>Descrição</label><textarea id="race-desc" placeholder="Descrição breve..."></textarea></div>
+      <div class="modal-section-label">⚡ Bônus de Atributos (valores base)</div>
+      <div class="field-grid cols-3" id="race-attr-inputs"></div>
+      <div class="modal-section-label">❤️ Bônus de Recursos Fixos</div>
+      <div class="field-grid cols-3">
+        <div class="field"><label>❤️ Vida Bônus</label><input type="number" id="race-bonus-hp" value="0" min="0"/></div>
+        <div class="field"><label>💙 Mana Bônus</label><input type="number" id="race-bonus-mp" value="0" min="0"/></div>
+        <div class="field"><label>🪨 Resistência Bônus</label><input type="number" id="race-bonus-def" value="0" min="0"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="saveRace()">Salvar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-race')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Class Modal -->
+<div class="modal-overlay" id="modal-class">
+  <div class="modal">
+    <div class="modal-header"><span id="modal-class-title">Nova Classe</span> <button class="modal-close" onclick="closeModal('modal-class')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="class-edit-idx" value="-1"/>
+      <div class="field"><label>Nome</label><input type="text" id="class-name" placeholder="Nome da classe..."/></div>
+      <div class="field"><label>Descrição</label><textarea id="class-desc" placeholder="Descrição breve..."></textarea></div>
+      <div class="modal-section-label">⚡ Bônus de Atributos (valores base)</div>
+      <div class="field-grid cols-3" id="class-attr-inputs"></div>
+      <div class="modal-section-label">❤️ Bônus de Recursos Fixos</div>
+      <div class="field-grid cols-3">
+        <div class="field"><label>❤️ Vida Bônus</label><input type="number" id="class-bonus-hp" value="0" min="0"/></div>
+        <div class="field"><label>💙 Mana Bônus</label><input type="number" id="class-bonus-mp" value="0" min="0"/></div>
+        <div class="field"><label>🪨 Resistência Bônus</label><input type="number" id="class-bonus-def" value="0" min="0"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="saveClass()">Salvar</button>
+      <button class="btn-secondary" onclick="closeModal('modal-class')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════════════════
+//  RPG ABLUBE — script.js
+// ══════════════════════════════════════════════════════
+
+// ── CONSTANTS ──
+const MAX_PLAYERS = 10;
+const PLAYER_NAMES = ['Jogador 1','Jogador 2','Jogador 3','Jogador 4','Jogador 5','Jogador 6','Jogador 7','Jogador 8','Jogador 9','Jogador 10'];
+let currentPlayer = 0;
+
+const ATTRS = [
+  { id:'str', name:'Força',        short:'FOR', emoji:'💪' },
+  { id:'vel', name:'Velocidade',   short:'VEL', emoji:'⚡' },
+  { id:'con', name:'Constituição', short:'CON', emoji:'🛡️' },
+  { id:'int', name:'Inteligência', short:'INT', emoji:'📚' },
+  { id:'fur', name:'Furtividade',  short:'FUR', emoji:'🌑' },
+  { id:'cha', name:'Carisma',      short:'CAR', emoji:'✨' },
+];
+
+const CONDITIONS = ['Amedrontado','Agarrado','Atordoado','Cego','Confuso','Enfeitiçado','Envenenado','Exausto','Incapacitado','Invisível','Paralisia','Surdo'];
+
+const SKILL_XP_REQ = [0, 100, 300, 700, 1500, Infinity];
+const SKILL_LEVEL_NAMES = ['I','II','III','IV','V'];
+
+// XP needed PER LEVEL (index = level going from, e.g. [0]=1→2)
+const XP_PER_LEVEL = (() => {
+  const t = [];
+  for(let i=1;i<=200;i++){
+    if(i<=5)       t.push(100);
+    else if(i<=10) t.push(200);
+    else if(i<=20) t.push(500);
+    else if(i<=25) t.push(1000);
+    else if(i<=30) t.push(2500);
+    else if(i<=45) t.push(5000);
+    else if(i<=50) t.push(10000);
+    else if(i<=60) t.push(25000);
+    else if(i<=70) t.push(50000);
+    else if(i<=80) t.push(100000);
+    else if(i<=90) t.push(250000);
+    else if(i<=100) t.push(500000);
+    else t.push(1000000);
+  }
+  return t;
+})();
+
+// Cumulative XP to reach each level
+const XP_TABLE = [0];
+for(let i=0;i<200;i++) XP_TABLE.push(XP_TABLE[i] + XP_PER_LEVEL[i]);
+
+// ── ATTR LIMIT ──
+function getAttrLimit(level) {
+  if(level<=15) return 15;
+  if(level<=25) return 20;
+  if(level<=35) return 25;
+  if(level<=45) return 30;
+  if(level<=55) return 35;
+  if(level<=65) return 40;
+  if(level<=75) return 45;
+  if(level<=85) return 50;
+  if(level<=95) return 55;
+  if(level<=99) return 60;
+  return 65;
+}
+
+// ── PRESTIGE STATE ──
+function getPrestigeData() {
+  const d = loadData(currentPlayer);
+  return { count: d?.prestige || 0, history: d?.prestigeHistory || [] };
+}
+
+function getMaxLevel(prestigeCount) { return 100 + prestigeCount * 25; }
+function getXpBonus(prestigeCount) { return prestigeCount * 0.10; }
+function getPowerBonus(prestigeCount) { return prestigeCount * 0.05; }
+
+// ── POINTS EARNED ──
+function getPointsEarned(level) { return Math.floor(level / 5) * 3; }
+function getSlotsCount(level) { if(level<10) return 0; return 2 + Math.floor((level-10)/10); }
+function getProfBonus(level) { return Math.ceil(level/4)+1; }
+
+
+// ── SISTEMA DE REPUTAÇÃO ──
+// Fórmulas:
+// Mult XP   = 1 + ((rep / 500) × 14)  → range 1x a 15x
+// Mult Ouro = 1 + ((rep / 500) × 24)  → range 1x a 25x
+
+const REP_BENEFITS = [
+  {rep:50,  benefit:'10% de desconto em lojas'},
+  {rep:100, benefit:'Missões exclusivas desbloqueadas'},
+  {rep:200, benefit:'Hospedagem gratuita em cidades aliadas'},
+  {rep:300, benefit:'Acesso a aliados NPC'},
+  {rep:500, benefit:'🏆 Herói do Reino — Áreas especiais e recompensas únicas'},
+];
+const REP_TITLES = [
+  {rep:0,   title:'Desconhecido'},
+  {rep:50,  title:'Conhecido'},
+  {rep:100, title:'Respeitado'},
+  {rep:200, title:'Admirado'},
+  {rep:300, title:'Venerado'},
+  {rep:400, title:'Lendário'},
+  {rep:500, title:'Herói do Reino'},
+];
+
+function getRepXpMult(rep) {
+  const r = Math.max(0, Math.min(500, rep));
+  return +(1 + (r / 500) * 14).toFixed(2);
+}
+function getRepGoldMult(rep) {
+  const r = Math.max(0, Math.min(500, rep));
+  return +(1 + (r / 500) * 24).toFixed(2);
+}
+function getRepTitle(rep) {
+  let title = 'Desconhecido';
+  REP_TITLES.forEach(r => { if(rep >= r.rep) title = r.title; });
+  return title;
+}
+function getRepBenefits(rep) {
+  return REP_BENEFITS.filter(r => rep >= r.rep).map(r => r.benefit);
+}
+
+function updatePacifistPanel() {
+  const panel = document.getElementById('pacifist-panel');
+  if(!panel) return;
+  panel.style.display = 'block';
+
+  const rep      = Math.max(0, Math.min(500, parseInt(document.getElementById('pacifist-rep')?.value)||0));
+  const xpMult   = getRepXpMult(rep);
+  const goldMult = getRepGoldMult(rep);
+  const title    = getRepTitle(rep);
+  const pct      = (rep / 500) * 100;
+
+  // Update values
+  const set = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('pacifist-mult',       xpMult + 'x');
+  set('pacifist-gold-mult',  goldMult + 'x');
+  set('pacifist-title-val',  title);
+  set('pacifist-rep-display', rep);
+
+  // Bar
+  const bar = document.getElementById('pacifist-rep-bar');
+  if(bar) bar.style.width = Math.min(100, pct) + '%';
+
+  // Benefits
+  const benefEl = document.getElementById('pacifist-benefits');
+  if(benefEl){
+    const benefits = getRepBenefits(rep);
+    benefEl.innerHTML = benefits.length
+      ? benefits.map(b => `<div class="rep-benefit">✅ ${b}</div>`).join('')
+      : '<div style="color:var(--text-dim);font-size:0.75rem">Alcance 50 de reputação para desbloquear benefícios.</div>';
+  }
+
+  // Next unlock
+  const next = REP_BENEFITS.find(r => rep < r.rep);
+  const nextEl = document.getElementById('pacifist-next-unlock');
+  if(nextEl) nextEl.textContent = next ? `Próximo: ${next.benefit} (Rep. ${next.rep})` : '✅ Todos os benefícios desbloqueados!';
+}
+
+// ── CURRENT STATE HELPERS ──
+function getCurrentLevel() { return parseInt(document.getElementById('char-level')?.value)||1; }
+function getCurrentXP() { return parseInt(document.getElementById('char-xp')?.value)||0; }
+
+// ── ATTR POINTS STATE ──
+function getAttrPointsState() {
+  const level = getCurrentLevel();
+  const totalEarned = getPointsEarned(level);
+  let totalSpent = 0;
+  ATTRS.forEach(a => {
+    const bonus = parseInt(document.getElementById(`attr-bonus-${a.id}`)?.dataset.bonus||'0');
+    totalSpent += Math.max(0, bonus);
+  });
+  return { totalEarned, totalSpent, available: Math.max(0, totalEarned - totalSpent) };
+}
+
+// ── SIDEBAR / SCREENS ──
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const sidebar = document.getElementById('sidebar');
+  if(window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+    if(!sidebar.contains(e.target) && !e.target.closest('.menu-btn')) {
+      sidebar.classList.remove('open');
+    }
+  }
+});
+
+const SCREEN_TITLES = {
+  dashboard:'Dashboard', character:'Personagem', attributes:'Atributos',
+  skills:'Habilidades', inventory:'Inventário', reputation:'Reputação',
+  prestige:'Prestígio', settings:'Configurações'
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+id)?.classList.add('active');
+  document.querySelector(`.nav-item[data-screen="${id}"]`)?.classList.add('active');
+  document.getElementById('topbar-title').textContent = SCREEN_TITLES[id]||'';
+  document.getElementById('sidebar').classList.remove('open');
+  if(id==='skills') updateSlots();
+  if(id==='prestige') updatePrestigeScreen();
+  if(id==='settings') renderRacesList(), renderClassesList();
+  if(id==='reputation') updatePacifistPanel();
+}
+
+// ── PLAYER SELECTOR ──
+function buildPlayerSelector() {
+  const c = document.getElementById('playerSelector'); c.innerHTML='';
+  for(let i=0;i<MAX_PLAYERS;i++){
+    const b = document.createElement('button');
+    b.className = 'player-btn' + (i===currentPlayer?' active':'');
+    const saved = loadData(i);
+    const name = saved?.charName || PLAYER_NAMES[i];
+    b.textContent = name.length>12?name.slice(0,12)+'…':name;
+    b.onclick = () => switchPlayer(i);
+    c.appendChild(b);
+  }
+}
+function switchPlayer(i){ saveChar(false); currentPlayer=i; loadChar(); buildPlayerSelector(); }
+
+// ── BUILD ATTRIBUTES ──
+function buildAttributes() {
+  const grid = document.getElementById('attrs-grid'); grid.innerHTML='';
+  ATTRS.forEach(a=>{
+    const div = document.createElement('div');
+    div.className='attr-box'; div.id=`attr-box-${a.id}`;
+    div.innerHTML=`
+      <span class="attr-name">${a.emoji} ${a.short}</span>
+      <span class="attr-score" id="attr-${a.id}" contenteditable="true" inputmode="numeric"
+        oninput="onAttrInput('${a.id}')" onkeydown="return filterNum(event)">0</span>
+      <span class="attr-mod" id="mod-${a.id}">+0</span>
+      <span class="attr-limit-lbl" id="alimit-${a.id}">Lim: 15</span>
+      <span id="attr-bonus-${a.id}" data-bonus="0" style="display:none"></span>
+      <div class="attr-controls">
+        <button class="attr-btn" id="attr-minus-${a.id}" onclick="adjustAttr('${a.id}',-1)">−</button>
+        <button class="attr-btn" id="attr-plus-${a.id}" onclick="adjustAttr('${a.id}',1)" disabled>+</button>
+      </div>`;
+    grid.appendChild(div);
+  });
+  buildAttrsMiniGrid();
+}
+
+function buildAttrsMiniGrid() {
+  const g = document.getElementById('attrs-mini-grid'); if(!g) return;
+  g.innerHTML='';
+  ATTRS.forEach(a=>{
+    const score = parseInt(document.getElementById(`attr-${a.id}`)?.textContent||'0');
+    const mod = getMod(score);
+    const d = document.createElement('div');
+    d.className='attr-mini';
+    d.innerHTML=`<div class="attr-mini-name">${a.short}</div><div class="attr-mini-val" id="mini-${a.id}">${score}</div><div class="attr-mini-mod" id="mini-mod-${a.id}">${mod}</div>`;
+    g.appendChild(d);
+  });
+}
+
+function filterNum(e){ if(['Backspace','Delete','ArrowLeft','ArrowRight','Tab'].includes(e.key)) return true; return /[0-9\-]/.test(e.key); }
+function getMod(score){ const n=parseInt(score)||10; const m=Math.floor((n-10)/2); return (m>=0?'+':'')+m; }
+function getModNum(score){ return Math.floor(((parseInt(score)||10)-10)/2); }
+
+function onAttrInput(id){
+  updateAttrMod(id); updateSaves(); updateAttrPointsDisplay(); updateMiniAttr(id); autoSave();
+}
+function updateAttrMod(id){
+  const el=document.getElementById(`attr-${id}`);
+  const mod=document.getElementById(`mod-${id}`);
+  if(el&&mod) mod.textContent=getMod(el.textContent.trim());
+}
+function updateMiniAttr(id){
+  const score = parseInt(document.getElementById(`attr-${id}`)?.textContent||'0');
+  const mEl = document.getElementById(`mini-${id}`);
+  const mModEl = document.getElementById(`mini-mod-${id}`);
+  if(mEl) mEl.textContent=score;
+  if(mModEl) mModEl.textContent=getMod(score);
+}
+function updateAllAttrMods(){ ATTRS.forEach(a=>{ updateAttrMod(a.id); updateMiniAttr(a.id); }); }
+
+function adjustAttr(id, delta) {
+  const scoreEl = document.getElementById(`attr-${id}`);
+  const bonusEl = document.getElementById(`attr-bonus-${id}`);
+  if(!scoreEl||!bonusEl) return;
+  const level = getCurrentLevel();
+  const limit = getAttrLimit(level);
+  const currentScore = parseInt(scoreEl.textContent.trim())||0;
+  const currentBonus = parseInt(bonusEl.dataset.bonus||'0');
+  if(delta>0){
+    const {available} = getAttrPointsState();
+    if(available<=0){ toast('Sem pontos disponíveis!'); return; }
+    if(currentScore>=limit){ toast(`Limite ${limit} para o nível atual!`); return; }
+    scoreEl.textContent = currentScore+1;
+    bonusEl.dataset.bonus = currentBonus+1;
+    addAttrHistory(`+1 em ${id.toUpperCase()} (${currentScore}→${currentScore+1})`);
+  } else {
+    if(currentBonus<=0){ toast('Não pode reduzir abaixo do valor base!'); return; }
+    scoreEl.textContent = currentScore-1;
+    bonusEl.dataset.bonus = currentBonus-1;
+    addAttrHistory(`-1 em ${id.toUpperCase()} (${currentScore}→${currentScore-1})`);
+  }
+  updateAttrMod(id); updateMiniAttr(id); updateSaves(); updateAttrPointsDisplay(); calcResources(); autoSave();
+}
+
+function addAttrHistory(msg) {
+  const el = document.getElementById('attr-history');
+  if(!el) return;
+  const now = new Date().toLocaleTimeString();
+  const line = document.createElement('div');
+  line.textContent = `[${now}] ${msg}`;
+  if(el.firstChild) el.insertBefore(line, el.firstChild);
+  else el.appendChild(line);
+  el.textContent.trim() && (el.querySelector('div') && void 0); // keep
+}
+
+function clearAttrHistory(){ const el=document.getElementById('attr-history'); if(el) el.textContent='Nenhum ponto distribuído ainda.'; }
+
+function updateAttrPointsDisplay() {
+  const level = getCurrentLevel();
+  const limit = getAttrLimit(level);
+  const {totalEarned, totalSpent, available} = getAttrPointsState();
+
+  const sp = document.getElementById('sp-count');
+  if(sp){ sp.textContent=available; sp.style.color=available>0?'var(--neon)':'var(--text-dim)'; }
+  const earned=document.getElementById('sp-earned'); if(earned) earned.textContent=totalEarned;
+  const spent=document.getElementById('sp-spent'); if(spent) spent.textContent=totalSpent;
+  const lim=document.getElementById('sp-limit'); if(lim) lim.textContent=limit;
+  const badge=document.getElementById('dash-pts-badge'); if(badge) badge.textContent=available+' pts';
+
+  ATTRS.forEach(a=>{
+    const box=document.getElementById(`attr-box-${a.id}`);
+    const score=parseInt(document.getElementById(`attr-${a.id}`)?.textContent||'0');
+    const atLimit=score>=limit;
+    if(box){ box.classList.toggle('has-pts',available>0&&!atLimit); box.classList.toggle('at-limit',atLimit); }
+    const ll=document.getElementById(`alimit-${a.id}`); if(ll) ll.textContent=`Lim: ${limit}`;
+    const btn=document.getElementById(`attr-plus-${a.id}`); if(btn) btn.disabled=available<=0||atLimit;
+  });
+}
+
+
+// ── RESOURCE CALCULATION ──
+function getAttrVal(id){
+  return parseInt(document.getElementById('attr-'+id)?.textContent?.trim()||'0')||0;
+}
+
+function calcResources(){
+  const str_ = getAttrVal('str');
+  const vel  = getAttrVal('vel');
+  const con  = getAttrVal('con');
+  const int_ = getAttrVal('int');
+  const fur  = getAttrVal('fur');
+  const cha  = getAttrVal('cha');
+
+  // ── FÓRMULAS PRINCIPAIS ──
+  const vida       = 50  + (con  * 5);
+  const mana       = 25  + (int_ * 5);
+  const resist     = 10  + con;
+  const danoFis    = 5   + (str_ * 2);
+  const carga      = 20  + (str_ * 5);
+  const iniciativa = vel;
+  const esquiva    = vel;
+  const danoMag    = int_;
+  const furtPct    = fur  * 2;
+  const critPct    = fur;
+  const persuasao  = cha  * 2;
+  const recompensa = cha  * 2;
+
+  // Resistência extra de raça/classe
+  const raceKey2  = document.getElementById('char-race')?.value||'';
+  const classKey2 = document.getElementById('char-class')?.value||'';
+  const races2    = getRaces(), classes2 = getClasses();
+  const raceData2  = races2.find(r=>r.name===raceKey2);
+  const classData2 = classes2.find(c=>c.name===classKey2);
+  const raceResist  = raceData2?.bonusResist  || 0;
+  const classResist = classData2?.bonusResist || 0;
+  const resistTotal = resist + raceResist + classResist;
+
+  // Defesa vem SOMENTE de equipamentos/habilidades (campo manual)
+  const defesa = parseInt(document.getElementById('defesa-val')?.value)||0;
+
+  // ── UPDATE VIDA ──
+  const hpMaxEl = document.getElementById('hp-max');
+  const hpCurEl = document.getElementById('hp-cur');
+  if(hpMaxEl) hpMaxEl.textContent = vida;
+  if(hpCurEl){
+    const cur = parseInt(hpCurEl.value)||0;
+    if(cur === 0 || cur > vida) hpCurEl.value = vida;
+  }
+  updateBar('hp');
+
+  // ── UPDATE MANA ──
+  const mpMaxEl = document.getElementById('mp-max');
+  const mpCurEl = document.getElementById('mp-cur');
+  if(mpMaxEl) mpMaxEl.textContent = mana;
+  if(mpCurEl){
+    const cur = parseInt(mpCurEl.value)||0;
+    if(cur === 0 || cur > mana) mpCurEl.value = mana;
+  }
+  updateBar('mp');
+
+  // ── UPDATE RESISTÊNCIA ──
+  const resEl = document.getElementById('resist-val');
+  if(resEl) resEl.textContent = resistTotal;
+  const resBar = document.getElementById('bar-resist');
+  if(resBar) resBar.style.width = Math.min(100,(resistTotal/100)*100)+'%';
+
+  // ── UPDATE DEFESA ──
+  const defBar = document.getElementById('bar-def');
+  if(defBar) defBar.style.width = Math.min(100,(defesa/100)*100)+'%';
+
+  // ── UPDATE FORMULAS ──
+  const setTxt = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setTxt('hp-formula',   `50 + CON(${con}×5) = ${vida}`);
+  setTxt('mp-formula',   `25 + INT(${int_}×5) = ${mana}`);
+  setTxt('resist-formula', `10+CON(${con})+Raça(${raceResist})+Cls(${classResist})=${resistTotal}`);
+  setTxt('def-formula',  `Equipamentos + Habilidades = ${defesa}`);
+
+  // ── UPDATE SECONDARY STATS ──
+  setTxt('sec-init',      '+'+iniciativa);
+  setTxt('sec-crit',      critPct+'%');
+  setTxt('sec-dano-fis',  danoFis+'');
+  setTxt('sec-dano-mag',  danoMag+'');
+  setTxt('sec-carga',     carga+'kg');
+
+  // ── UPDATE COMBAT DISPLAY ──
+  setTxt('stat-hp-disp',  vida);
+  setTxt('stat-mp-disp',  mana);
+  setTxt('stat-def-disp', defesa);
+  setTxt('stat-res-disp', resistTotal);
+
+  // ── UPDATE INITIATIVE FIELD ──
+  const si = document.getElementById('stat-init'); if(si) si.value = iniciativa;
+
+  updateCharQuickInfo();
+}
+
+function removeCharPortrait(){
+  const img = document.getElementById('char-portrait-img');
+  const ph  = document.getElementById('char-portrait-ph');
+  if(img){ img.src=''; img.style.display='none'; }
+  if(ph) ph.style.display='flex';
+  const inp = document.getElementById('char-portrait-input');
+  if(inp) inp.value='';
+  autoSave();
+}
+
+function applyCharPortrait(src){
+  const img = document.getElementById('char-portrait-img');
+  const ph  = document.getElementById('char-portrait-ph');
+  if(!img) return;
+  img.src = src;
+  img.style.cssText = 'display:block;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:5;border-radius:2px';
+  if(ph) ph.style.display='none';
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const inp = document.getElementById('char-portrait-input');
+  if(inp){
+    inp.addEventListener('change', function(){
+      const file = this.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => { applyCharPortrait(e.target.result); autoSave(); };
+      reader.readAsDataURL(file);
+    });
+  }
+});
+
+function updateCharQuickInfo(){
+  const name  = document.getElementById('char-name')?.value || '— Sem Nome —';
+  const cls   = document.getElementById('char-class')?.value || 'Sem classe';
+  const race  = document.getElementById('char-race')?.value  || 'Sem raça';
+  const level = document.getElementById('char-level')?.value || '1';
+  const hp    = document.getElementById('hp-max')?.textContent || '50';
+  const mp    = document.getElementById('mp-max')?.textContent || '25';
+  const def   = document.getElementById('defesa-val')?.value || '0';
+  const res   = document.getElementById('resist-val')?.textContent || '10';
+  const qName = document.getElementById('char-quick-name'); if(qName) qName.textContent = name;
+  const qMeta = document.getElementById('char-quick-meta'); if(qMeta) qMeta.textContent = cls+' • '+race;
+  const qLvl  = document.getElementById('char-quick-level'); if(qLvl) qLvl.textContent = level;
+  const qHp   = document.getElementById('cq-hp'); if(qHp) qHp.textContent = hp;
+  const qMp   = document.getElementById('cq-mp'); if(qMp) qMp.textContent = mp;
+  const qDef  = document.getElementById('cq-def'); if(qDef) qDef.textContent = def;
+}
+
+// ── SAVES ──
+function buildSaves(){
+  const sl=document.getElementById('saves-list'); if(!sl) return;
+  sl.innerHTML='';
+  ATTRS.forEach(s=>{
+    const row=document.createElement('div'); row.className='skill-row';
+    row.innerHTML=`
+      <div class="skill-proficient" id="save-${s.id}" onclick="toggleSave('${s.id}')"></div>
+      <span class="skill-name">${s.short} — ${s.name}</span>
+      <span class="skill-bonus" id="savebonus-${s.id}">+0</span>`;
+    sl.appendChild(row);
+  });
+}
+function toggleSave(id){ document.getElementById(`save-${id}`).classList.toggle('checked'); updateSaves(); autoSave(); }
+function updateSaves(){
+  const pb=getProfBonus(getCurrentLevel());
+  document.getElementById('stat-prof').textContent='+'+pb;
+  ATTRS.forEach(s=>{
+    const attrEl=document.getElementById(`attr-${s.id}`);
+    const mod=getModNum(attrEl?.textContent||'0');
+    const profEl=document.getElementById(`save-${s.id}`);
+    const bonus=mod+(profEl?.classList.contains('checked')?pb:0);
+    const bEl=document.getElementById(`savebonus-${s.id}`);
+    if(bEl) bEl.textContent=(bonus>=0?'+':'')+bonus;
+  });
+}
+
+// ── CONDITIONS ──
+function buildConditions(){
+  const grid=document.getElementById('conditions-grid'); if(!grid) return;
+  grid.innerHTML='';
+  CONDITIONS.forEach(c=>{
+    const chip=document.createElement('div');
+    chip.className='condition-chip'; chip.id='cond-'+c.replace(/\s/g,'_');
+    chip.textContent=c;
+    chip.onclick=()=>{ chip.classList.toggle('active'); autoSave(); };
+    grid.appendChild(chip);
+  });
+}
+
+// ── LEVEL / XP ──
+function onLevelChange(){
+  const level=getCurrentLevel();
+  updateSaves();
+  updateAttrPointsDisplay();
+  updateSlots();
+  updateXpBar();
+  updatePrestigeCheck();
+  refreshDashLevel();
+}
+
+function refreshDashLevel(){
+  const level=getCurrentLevel();
+  document.getElementById('dash-level').textContent=level;
+  const pb=getProfBonus(level);
+  document.getElementById('stat-prof').textContent='+'+pb;
+}
+
+function updateXpBar(){
+  const level=getCurrentLevel();
+  const xp=getCurrentXP();
+  const curXP=XP_TABLE[level-1]||0;
+  const nextXP=XP_TABLE[level]||XP_TABLE[level-1]+1000000;
+  const pct=Math.min(100,Math.max(0,((xp-curXP)/(nextXP-curXP))*100));
+  document.getElementById('dash-xp-bar').style.width=pct+'%';
+  document.getElementById('dash-xp').textContent=xp.toLocaleString();
+  document.getElementById('dash-xp-next').textContent=nextXP.toLocaleString();
+  const pctEl=document.getElementById('xp-pct-label');
+  if(pctEl) pctEl.textContent=pct.toFixed(1)+'%';
+}
+
+function addXPAmount(amount){
+  const inp=document.getElementById('char-xp');
+  const prestige=getPrestigeData().count;
+  const bonus=1+getXpBonus(prestige);
+  const gained=Math.round(amount*bonus);
+  inp.value=parseInt(inp.value||0)+gained;
+  checkLevelUp();
+  updateXpBar();
+  autoSave();
+  toast(`+${gained.toLocaleString()} XP! 🎉`);
+}
+
+function checkLevelUp(){
+  const level=getCurrentLevel();
+  const xp=getCurrentXP();
+  const nextXP=XP_TABLE[level];
+  const prestige=getPrestigeData().count;
+  const maxLevel=getMaxLevel(prestige);
+  if(nextXP && xp>=nextXP && level<maxLevel){
+    document.getElementById('char-level').value=level+1;
+    onLevelChange();
+    toast(`🎊 Subiu para o nível ${level+1}!`);
+    if(level+1<maxLevel) checkLevelUp(); // cascade
+  }
+}
+
+// ── BARS ──
+function updateBar(type){
+  const cur=parseFloat(document.getElementById(`${type}-cur`)?.value)||0;
+  const maxEl=document.getElementById(`${type}-max`);
+  const max=parseFloat(maxEl?.value||maxEl?.textContent)||1;
+  const barEl=document.getElementById(`bar-${type}`);
+  if(barEl) barEl.style.width=Math.min(100,Math.max(0,(cur/max)*100))+'%';
+}
+function updateBar2(id, val, maxVal){
+  const el=document.getElementById(id);
+  if(el) el.style.width=Math.min(100,Math.max(0,(val/Math.max(1,maxVal))*100))+'%';
+}
+
+// ── IDENTITY ──
+function onNameChange(){
+  const name=document.getElementById('char-name').value;
+  document.getElementById('dash-char-name').textContent=name||'— Sem Nome —';
+  document.getElementById('nav-char-name').textContent=name||'— Sem Nome —';
+  buildPlayerSelector();
+  updateCharQuickInfo();
+}
+function onClassChange(){
+  const cls=document.getElementById('char-class').value;
+  const race=document.getElementById('char-race').value;
+  document.getElementById('dash-char-meta').textContent=(cls||'Sem classe')+' • '+(race||'Sem raça');
+  document.getElementById('nav-char-info').textContent=cls+' '+race;
+  applyRaceClassBonuses();
+  updateCharQuickInfo();
+}
+function onRaceChange(){
+  const cls=document.getElementById('char-class').value;
+  const race=document.getElementById('char-race').value;
+  document.getElementById('dash-char-meta').textContent=(cls||'Sem classe')+' • '+(race||'Sem raça');
+  applyRaceClassBonuses();
+  updateCharQuickInfo();
+}
+
+function applyRaceClassBonuses(){
+  const raceKey=document.getElementById('char-race').value;
+  const classKey=document.getElementById('char-class').value;
+  const races=getRaces(), classes=getClasses();
+  const raceData=races.find(r=>r.name===raceKey);
+  const classData=classes.find(c=>c.name===classKey);
+
+  // Atributos = Raça + Classe + pontos manuais distribuídos
+  // Sem raça/classe selecionada = 0
+  ATTRS.forEach(a=>{
+    const raceVal  = raceData?.attrs?.[a.id]  || 0;
+    const classVal = classData?.attrs?.[a.id] || 0;
+    const bonusEl  = document.getElementById(`attr-bonus-${a.id}`);
+    const bonus    = parseInt(bonusEl?.dataset.bonus||'0');
+    const total    = raceVal + classVal + bonus; // sem mínimo forçado
+    const scoreEl  = document.getElementById(`attr-${a.id}`);
+    if(scoreEl) scoreEl.textContent = Math.max(0, total);
+  });
+  updateAllAttrMods();
+  updateSaves();
+  updateAttrPointsDisplay();
+  calcResources();
+  buildAttrsMiniGrid();
+  updateCharQuickInfo();
+}
+
+// ── NOTES TABS ──
+function switchTab(id){
+  const tabs=['tracos','ideais','vinculos','fraquezas','historia','magias'];
+  document.querySelectorAll('.notes-tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
+  document.querySelectorAll('.notes-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+id));
+}
+
+// ── PORTRAIT ──
+
+function removePortrait(){
+  document.getElementById('portrait-img').src='';
+  document.getElementById('portrait-img').style.display='none';
+  document.getElementById('portrait-ph').style.display='';
+  document.getElementById('portrait-hint').style.display='';
+  document.getElementById('portrait-input').value='';
+  autoSave();
+}
+
+document.getElementById('portrait-input').addEventListener('change',function(){
+  const file=this.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.getElementById('portrait-img');
+    img.src=e.target.result;
+    img.style.cssText='display:block;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:5';
+    document.getElementById('portrait-ph').style.display='none';
+    document.getElementById('portrait-hint').style.display='none';
+    autoSave();
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── SLOTS DE HABILIDADE ──
+function updateSlots(){
+  const level=getCurrentLevel();
+  const count=getSlotsCount(level);
+  const el=document.getElementById('slots-count'); if(el) el.textContent=count;
+  const grid=document.getElementById('slots-grid'); if(!grid) return;
+  const existing=[];
+  for(let i=1;i<=11;i++){
+    existing.push({
+      name:document.getElementById(`slot-name-${i}`)?.value||'',
+      desc:document.getElementById(`slot-desc-${i}`)?.value||'',
+      xp:document.getElementById(`slot-xp-${i}`)?.value||'0'
+    });
+  }
+  grid.innerHTML='';
+  for(let i=1;i<=11;i++){
+    const unlocked=i<=count;
+    const unlockLevel=i<=2?10:10+(i-2)*10;
+    const div=document.createElement('div');
+    div.className='slot-box '+(unlocked?'unlocked':'locked');
+    const xpVal=parseInt(existing[i-1]?.xp||'0');
+    const lvlName=getSkillLevel(xpVal);
+    const pct=getSkillXpPct(xpVal);
+    div.innerHTML=`
+      <div class="slot-label">Slot ${i} ${unlocked?'':'🔒 Nv.'+unlockLevel}</div>
+      <input type="text" id="slot-name-${i}" placeholder="Nome da habilidade..." value="${existing[i-1]?.name||''}" oninput="autoSave()" ${unlocked?'':'disabled'}/>
+      <input type="text" id="slot-desc-${i}" placeholder="Descrição / efeito..." value="${existing[i-1]?.desc||''}" oninput="autoSave()" style="font-size:0.75rem" ${unlocked?'':'disabled'}/>
+      <div class="skill-xp-row">
+        <span style="font-size:0.68rem;color:var(--text-dim)">XP:</span>
+        <input type="number" id="slot-xp-${i}" min="0" value="${existing[i-1]?.xp||0}" style="width:70px" oninput="updateSlotLevel(${i});autoSave()" ${unlocked?'':'disabled'}/>
+        <button class="btn-sm" onclick="addSkillXP(${i})" ${unlocked?'':'disabled'}>+XP</button>
+        <span class="skill-lvl-badge" id="slot-lvl-${i}">${lvlName}</span>
+      </div>
+      <div class="skill-xp-bar-wrap"><div class="bar-track"><div class="bar-fill bar-xp" id="slot-xpbar-${i}" style="width:${pct}%"></div></div></div>`;
+    grid.appendChild(div);
+  }
+}
+
+function getSkillLevel(xp){
+  let l=0;
+  SKILL_XP_REQ.forEach((req,i)=>{ if(xp>=req) l=i; });
+  return SKILL_LEVEL_NAMES[Math.min(l,4)];
+}
+function getSkillXpPct(xp){
+  let currentReq=0, nextReq=100;
+  for(let i=0;i<SKILL_XP_REQ.length-1;i++){
+    if(xp>=SKILL_XP_REQ[i]) { currentReq=SKILL_XP_REQ[i]; nextReq=SKILL_XP_REQ[i+1]||SKILL_XP_REQ[i]+500; }
+  }
+  if(nextReq===Infinity) return 100;
+  return Math.min(100,Math.max(0,((xp-currentReq)/(nextReq-currentReq))*100));
+}
+function updateSlotLevel(i){
+  const xp=parseInt(document.getElementById(`slot-xp-${i}`)?.value)||0;
+  const lvlEl=document.getElementById(`slot-lvl-${i}`); if(lvlEl) lvlEl.textContent=getSkillLevel(xp);
+  const barEl=document.getElementById(`slot-xpbar-${i}`); if(barEl) barEl.style.width=getSkillXpPct(xp)+'%';
+}
+function addSkillXP(i){
+  const amount=parseInt(prompt('XP a adicionar:','50'))||0;
+  if(!amount) return;
+  const inp=document.getElementById(`slot-xp-${i}`);
+  inp.value=parseInt(inp.value||0)+amount;
+  updateSlotLevel(i);
+  autoSave();
+  toast(`+${amount} XP na habilidade ${i}!`);
+}
+
+// ── PASSIVAS ──
+function addPassive(name='',xp=0,desc=''){
+  const list=document.getElementById('passives-list');
+  const div=document.createElement('div'); div.className='passive-row';
+  const lvl=getSkillLevel(xp);
+  div.innerHTML=`
+    <input type="text" placeholder="Nome da passiva..." value="${name}" oninput="autoSave()" style="flex:1"/>
+    <input type="text" placeholder="Efeito..." value="${desc}" oninput="autoSave()" style="flex:1.5;font-size:0.75rem"/>
+    <span style="font-size:0.68rem;color:var(--text-dim)">XP:</span>
+    <input type="number" min="0" value="${xp}" style="width:65px" oninput="updatePassiveLvl(this);autoSave()"/>
+    <span class="passive-lvl">${lvl}</span>
+    <button onclick="this.closest('.passive-row').remove();autoSave()" style="background:none;border:none;color:#ff4444;cursor:pointer;padding:0 0.2rem">✕</button>`;
+  list.appendChild(div);
+}
+function updatePassiveLvl(input){ const lvl=getSkillLevel(parseInt(input.value)||0); input.closest('.passive-row').querySelector('.passive-lvl').textContent=lvl; }
+
+// ── INVENTORY ──
+let inventory = [];
+function renderInventory(){
+  const list=document.getElementById('inventory-list');
+  if(!list) return;
+  list.innerHTML='';
+  if(!inventory.length){ list.innerHTML='<div style="color:var(--text-dim);font-size:0.85rem;text-align:center;padding:1rem">Nenhum item no inventário.</div>'; return; }
+  inventory.forEach((item,idx)=>{
+    const rarityClass='rarity-'+item.rarity.toLowerCase().replace(' ','-');
+    const div=document.createElement('div');
+    div.className='item-card'+(item.equipped?' equipped':'');
+    div.innerHTML=`
+      <div class="item-info">
+        <div class="item-name">${item.equipped?'⚔️ ':''}<span class="${rarityClass}">${item.name}</span> <span style="font-size:0.65rem;color:var(--text-dim)">x${item.qty}</span></div>
+        <div class="item-meta">${item.type} • ${item.rarity} • ${item.weight}kg</div>
+        ${item.desc?`<div class="item-desc">${item.desc}</div>`:''}
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm" onclick="toggleEquip(${idx})">${item.equipped?'Desequipar':'Equipar'}</button>
+        <button class="btn-sm" onclick="editItem(${idx})">✏️</button>
+        <button class="btn-sm" style="color:#ff4444;border-color:rgba(255,68,68,0.3)" onclick="removeItem(${idx})">✕</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+function toggleEquip(idx){ inventory[idx].equipped=!inventory[idx].equipped; renderInventory(); autoSave(); }
+function removeItem(idx){ if(!confirm('Remover item?')) return; inventory.splice(idx,1); renderInventory(); autoSave(); }
+function editItem(idx){
+  const item=inventory[idx];
+  document.getElementById('item-edit-idx').value=idx;
+  document.getElementById('item-name').value=item.name;
+  document.getElementById('item-type').value=item.type;
+  document.getElementById('item-rarity').value=item.rarity;
+  document.getElementById('item-weight').value=item.weight;
+  document.getElementById('item-qty').value=item.qty;
+  document.getElementById('item-desc').value=item.desc;
+  openModal('modal-item');
+}
+function openItemModal(){
+  document.getElementById('item-edit-idx').value=-1;
+  document.getElementById('item-name').value='';
+  document.getElementById('item-desc').value='';
+  document.getElementById('item-weight').value='';
+  document.getElementById('item-qty').value=1;
+  openModal('modal-item');
+}
+function saveItem(){
+  const idx=parseInt(document.getElementById('item-edit-idx').value);
+  const item={
+    name:document.getElementById('item-name').value||'Item',
+    type:document.getElementById('item-type').value,
+    rarity:document.getElementById('item-rarity').value,
+    weight:document.getElementById('item-weight').value||'0',
+    qty:parseInt(document.getElementById('item-qty').value)||1,
+    desc:document.getElementById('item-desc').value,
+    equipped:false
+  };
+  if(idx>=0) { item.equipped=inventory[idx].equipped; inventory[idx]=item; }
+  else inventory.push(item);
+  renderInventory(); autoSave(); closeModal('modal-item');
+}
+
+// ── REPUTATION ──
+function addReputation(name='',title=''){
+  const grid=document.getElementById('rep-grid');
+  document.getElementById('rep-empty').style.display='none';
+  const div=document.createElement('div'); div.className='rep-box';
+  div.innerHTML=`
+    <div class="rep-faction"><input type="text" placeholder="Nome da facção..." value="${name}" oninput="autoSave()" style="background:transparent;border:none;border-bottom:1px solid rgba(245,197,24,0.3);color:var(--gold);font-family:'Cinzel',serif;font-size:0.78rem"/></div>
+    <input type="text" placeholder="Ex: Aliado, Temido, Neutro..." value="${title}" oninput="autoSave()" class="rep-title" style="background:transparent;border:none;border-bottom:1px solid var(--border)"/>
+    <button onclick="this.closest('.rep-box').remove();checkRepEmpty();autoSave()" style="background:none;border:none;color:#ff4444;cursor:pointer;font-size:0.65rem;text-align:right">✕ remover</button>`;
+  grid.appendChild(div);
+}
+function checkRepEmpty(){ if(!document.querySelectorAll('#rep-grid .rep-box').length) document.getElementById('rep-empty').style.display=''; }
+
+// ── PRESTIGE ──
+function updatePrestigeScreen(){
+  const {count}=getPrestigeData();
+  document.getElementById('prestige-count-big').textContent=count;
+  const dash=document.getElementById('dash-prestige-badge');
+  if(dash){ dash.style.display=count>0?'inline-block':'none'; }
+  document.getElementById('dash-prestige-count').textContent=count;
+  document.getElementById('p-xp-bonus').textContent=`+${(getXpBonus(count)*100).toFixed(0)}%`;
+  document.getElementById('p-pow-bonus').textContent=`+${(getPowerBonus(count)*100).toFixed(0)}%`;
+  document.getElementById('p-max-level').textContent=getMaxLevel(count);
+  updatePrestigeCheck();
+}
+function updatePrestigeCheck(){
+  const level=getCurrentLevel();
+  const {count}=getPrestigeData();
+  const maxLevel=getMaxLevel(count);
+  const btn=document.getElementById('prestige-btn');
+  const status=document.getElementById('prestige-status');
+  const canPrestige=level>=maxLevel;
+  if(btn) btn.disabled=!canPrestige;
+  if(status) status.textContent=canPrestige?`✅ Nível máximo atingido! Você pode prestigiar.`:`Atingir nível ${maxLevel} para prestigiar. (Atual: ${level})`;
+}
+function doPrestige(){
+  if(!confirm(`Prestigiar? Isso reinicia nível, XP, atributos distribuídos e habilidades. Seus bônus permanentes aumentam.\n\nDeseja continuar?`)) return;
+  const data=loadData(currentPlayer)||{};
+  const count=(data.prestige||0)+1;
+  const history=data.prestigeHistory||[];
+  const now=new Date().toLocaleString();
+  history.push(`[${now}] Prestígio ${count} — Nível ${getCurrentLevel()}`);
+  // Reset
+  document.getElementById('char-level').value=1;
+  document.getElementById('char-xp').value=0;
+  ATTRS.forEach(a=>{ const b=document.getElementById(`attr-bonus-${a.id}`); if(b) b.dataset.bonus='0'; });
+  // Save prestige info into data then resave
+  const newData=collectData();
+  newData.prestige=count;
+  newData.prestigeHistory=history;
+  try{ localStorage.setItem(`rpg_ablube_p${currentPlayer}`,JSON.stringify(newData)); }catch{}
+  applyData(newData);
+  updatePrestigeScreen();
+  updateSlots();
+  onLevelChange();
+  toast(`🏆 Prestígio ${count} alcançado!`);
+}
+
+// ── RACES & CLASSES DB ──
+const DEFAULT_RACES = [
+  { name:'Efreeti (Gênios)',         desc:'Seres de fogo e gênio arcano.',   attrs:{str:6,vel:6,con:7,int:10,fur:3,cha:9},  bonusHp:30,  bonusMp:40,  bonusResist:2 },
+  { name:'Umbrais (Povo Sombrio)',   desc:'Seres das sombras.',              attrs:{str:4,vel:8,con:5,int:7,fur:10,cha:5}, bonusHp:0,   bonusMp:20,  bonusResist:1 },
+  { name:'Miceloides (Povo Cogumelo)',desc:'Povo fúngico telepático.',       attrs:{str:4,vel:3,con:9,int:7,fur:6,cha:2},  bonusHp:50,  bonusMp:20,  bonusResist:2 },
+  { name:'Anão',                     desc:'Robustos e resistentes.',         attrs:{str:7,vel:3,con:10,int:6,fur:2,cha:4}, bonusHp:40,  bonusMp:0,   bonusResist:3 },
+  { name:'Draconato',                desc:'Descendentes de dragões.',        attrs:{str:9,vel:5,con:8,int:5,fur:2,cha:7},  bonusHp:45,  bonusMp:20,  bonusResist:3 },
+  { name:'Elfo',                     desc:'Ágeis e inteligentes.',           attrs:{str:4,vel:8,con:4,int:8,fur:7,cha:6},  bonusHp:0,   bonusMp:30,  bonusResist:0 },
+  { name:'Gnomo',                    desc:'Inventivos e curiosos.',          attrs:{str:2,vel:5,con:4,int:9,fur:6,cha:5},  bonusHp:0,   bonusMp:25,  bonusResist:0 },
+  { name:'Halfling',                 desc:'Pequenos mas sortudos.',          attrs:{str:2,vel:7,con:4,int:5,fur:9,cha:7},  bonusHp:10,  bonusMp:10,  bonusResist:0 },
+  { name:'Humano',                   desc:'Versáteis e adaptáveis.',         attrs:{str:5,vel:5,con:5,int:5,fur:5,cha:5},  bonusHp:10,  bonusMp:10,  bonusResist:1 },
+  { name:'Meio-Elfo',                desc:'Mistura de humano e elfo.',       attrs:{str:4,vel:7,con:5,int:7,fur:6,cha:8},  bonusHp:0,   bonusMp:20,  bonusResist:0 },
+  { name:'Meio-Orc',                 desc:'Força bruta e resiliência.',      attrs:{str:8,vel:5,con:8,int:3,fur:3,cha:4},  bonusHp:50,  bonusMp:0,   bonusResist:3 },
+  { name:'Tiefling',                 desc:'Descendentes de demônios.',       attrs:{str:4,vel:6,con:5,int:8,fur:5,cha:9},  bonusHp:0,   bonusMp:35,  bonusResist:0 },
+  { name:'Orc',                      desc:'Fortes e temidos.',               attrs:{str:10,vel:4,con:9,int:2,fur:2,cha:3}, bonusHp:60,  bonusMp:0,   bonusResist:4 },
+  { name:'Goblin',                   desc:'Rápidos e ardilosos.',            attrs:{str:2,vel:9,con:3,int:5,fur:10,cha:2}, bonusHp:5,   bonusMp:0,   bonusResist:0 },
+];
+const DEFAULT_CLASSES = [
+  { name:'Mago',              desc:'Conjurador de magias arcanas.',     attrs:{str:1,vel:2,con:2,int:5,fur:2,cha:3}, bonusHp:0,   bonusMp:22,  bonusResist:0 },
+  { name:'Druida das Plantas',desc:'Controla a natureza vegetal.',      attrs:{str:2,vel:2,con:4,int:4,fur:2,cha:3}, bonusHp:15,  bonusMp:10,  bonusResist:2 },
+  { name:'Druida dos Animais',desc:'Comunica-se com animais.',          attrs:{str:3,vel:3,con:4,int:3,fur:2,cha:3}, bonusHp:20,  bonusMp:5,   bonusResist:2 },
+  { name:'Pirotécnico',       desc:'Domina fogo e explosões.',          attrs:{str:2,vel:3,con:2,int:4,fur:2,cha:3}, bonusHp:0,   bonusMp:15,  bonusResist:0 },
+  { name:'Guerreiro',         desc:'Mestre do combate corpo a corpo.',  attrs:{str:5,vel:2,con:5,int:2,fur:1,cha:2}, bonusHp:40,  bonusMp:0,   bonusResist:5 },
+  { name:'Arqueiro',          desc:'Mestre das flechas e precisão.',    attrs:{str:2,vel:4,con:3,int:3,fur:4,cha:2}, bonusHp:15,  bonusMp:0,   bonusResist:2 },
+  { name:'Ladrão',            desc:'Ágil, furtivo e manhoso.',          attrs:{str:2,vel:5,con:2,int:3,fur:5,cha:3}, bonusHp:10,  bonusMp:0,   bonusResist:0 },
+  { name:'Monge',             desc:'Combatente disciplinado e veloz.',  attrs:{str:3,vel:5,con:3,int:3,fur:3,cha:2}, bonusHp:25,  bonusMp:0,   bonusResist:3 },
+  { name:'Velocista',         desc:'Velocidade sobrenatural.',          attrs:{str:2,vel:5,con:2,int:2,fur:4,cha:2}, bonusHp:10,  bonusMp:0,   bonusResist:1 },
+  { name:'Bárbaro',           desc:'Guerreiro selvagem e implacável.',  attrs:{str:5,vel:3,con:5,int:1,fur:1,cha:2}, bonusHp:50,  bonusMp:0,   bonusResist:4 },
+  { name:'Paladino',          desc:'Guerreiro sagrado e protetor.',     attrs:{str:4,vel:2,con:5,int:2,fur:1,cha:4}, bonusHp:40,  bonusMp:20,  bonusResist:4 },
+  { name:'Alquimista',        desc:'Mestre das poções e ciências.',     attrs:{str:1,vel:2,con:2,int:5,fur:2,cha:2}, bonusHp:0,   bonusMp:25,  bonusResist:0 },
+  { name:'Mineirador',        desc:'Especialista em minerais e forja.', attrs:{str:4,vel:1,con:5,int:2,fur:1,cha:2}, bonusHp:45,  bonusMp:0,   bonusResist:4 },
+  { name:'Clérigo',           desc:'Curandeiro e servo dos deuses.',    attrs:{str:2,vel:2,con:4,int:4,fur:1,cha:4}, bonusHp:20,  bonusMp:25,  bonusResist:2 },
+  { name:'Bardo',             desc:'Artista e manipulador de emoções.', attrs:{str:1,vel:3,con:2,int:3,fur:2,cha:5}, bonusHp:0,   bonusMp:15,  bonusResist:0 },
+  { name:'Berserker',         desc:'Fúria incontrolável em batalha.',   attrs:{str:5,vel:4,con:4,int:1,fur:1,cha:1}, bonusHp:45,  bonusMp:0,   bonusResist:3 },
+  { name:'Criomante',         desc:'Mago do gelo e do frio.',           attrs:{str:1,vel:2,con:2,int:5,fur:2,cha:3}, bonusHp:0,   bonusMp:25,  bonusResist:0 },
+  { name:'Hidromante',        desc:'Controla água e tempestades.',      attrs:{str:1,vel:3,con:3,int:4,fur:2,cha:3}, bonusHp:15,  bonusMp:20,  bonusResist:1 },
+  { name:'Ferreiro',          desc:'Mestre da forja e das armas.',      attrs:{str:4,vel:1,con:5,int:3,fur:1,cha:2}, bonusHp:45,  bonusMp:0,   bonusResist:4 },
+  { name:'Ilusionista',       desc:'Manipula percepções e ilusões.',    attrs:{str:1,vel:3,con:2,int:4,fur:5,cha:4}, bonusHp:0,   bonusMp:20,  bonusResist:0 },
+];
+
+function getRaces(){
+  try{ const s=localStorage.getItem('rpg_ablube_races'); return s?JSON.parse(s):DEFAULT_RACES; }catch{ return DEFAULT_RACES; }
+}
+function getClasses(){
+  try{ const s=localStorage.getItem('rpg_ablube_classes'); return s?JSON.parse(s):DEFAULT_CLASSES; }catch{ return DEFAULT_CLASSES; }
+}
+function saveRacesDB(races){ localStorage.setItem('rpg_ablube_races',JSON.stringify(races)); }
+function saveClassesDB(classes){ localStorage.setItem('rpg_ablube_classes',JSON.stringify(classes)); }
+
+function populateSelects(){
+  const raceSelect=document.getElementById('char-race');
+  const classSelect=document.getElementById('char-class');
+  const curRace=raceSelect.value, curClass=classSelect.value;
+  raceSelect.innerHTML='<option value="">— Escolher —</option>';
+  classSelect.innerHTML='<option value="">— Escolher —</option>';
+  getRaces().forEach(r=>{ const o=document.createElement('option'); o.value=r.name; o.textContent=r.name; raceSelect.appendChild(o); });
+  getClasses().forEach(c=>{ const o=document.createElement('option'); o.value=c.name; o.textContent=c.name; classSelect.appendChild(o); });
+  raceSelect.value=curRace;
+  classSelect.value=curClass;
+}
+
+function renderRacesList(){
+  const list=document.getElementById('races-list'); if(!list) return;
+  list.innerHTML='';
+  getRaces().forEach((r,idx)=>{
+    const d=document.createElement('div'); d.className='db-item';
+    const attrStr=Object.entries(r.attrs).filter(([,v])=>v>0).map(([k,v])=>`${k.toUpperCase()}+${v}`).join(', ');
+    const bonusStr=[(r.bonusHp?`❤️+${r.bonusHp}`:''),(r.bonusMp?`💙+${r.bonusMp}`:''),(r.bonusResist?`🪨+${r.bonusResist}`:'')].filter(Boolean).join(' ');
+    d.innerHTML=`
+      <div style="flex:1">
+        <div class="db-item-name">${r.name}</div>
+        <div class="db-item-meta">${attrStr}</div>
+        ${bonusStr?`<div class="db-item-bonus">${bonusStr}</div>`:''}
+      </div>
+      <div style="display:flex;gap:0.3rem">
+        <button class="btn-sm" onclick="openEditRaceModal(${idx})">✏️</button>
+        <button class="btn-sm" style="color:#ff4444;border-color:rgba(255,68,68,0.3)" onclick="deleteRace(${idx})">✕</button>
+      </div>`;
+    list.appendChild(d);
+  });
+}
+function renderClassesList(){
+  const list=document.getElementById('classes-list'); if(!list) return;
+  list.innerHTML='';
+  getClasses().forEach((c,idx)=>{
+    const d=document.createElement('div'); d.className='db-item';
+    const attrStr=Object.entries(c.attrs).filter(([,v])=>v>0).map(([k,v])=>`${k.toUpperCase()}+${v}`).join(', ');
+    const bonusStr=[(c.bonusHp?`❤️+${c.bonusHp}`:''),(c.bonusMp?`💙+${c.bonusMp}`:''),(c.bonusResist?`🪨+${c.bonusResist}`:'')].filter(Boolean).join(' ');
+    d.innerHTML=`
+      <div style="flex:1">
+        <div class="db-item-name">${c.name}</div>
+        <div class="db-item-meta">${attrStr}</div>
+        ${bonusStr?`<div class="db-item-bonus">${bonusStr}</div>`:''}
+      </div>
+      <div style="display:flex;gap:0.3rem">
+        <button class="btn-sm" onclick="openEditClassModal(${idx})">✏️</button>
+        <button class="btn-sm" style="color:#ff4444;border-color:rgba(255,68,68,0.3)" onclick="deleteClass(${idx})">✕</button>
+      </div>`;
+    list.appendChild(d);
+  });
+}
+
+// ── EDIT RACE / CLASS ──
+function openEditRaceModal(idx){
+  const races=getRaces();
+  const r=races[idx];
+  if(!r) return;
+  buildRaceAttrInputs();
+  document.getElementById('race-edit-idx').value=idx;
+  document.getElementById('race-name').value=r.name;
+  document.getElementById('race-desc').value=r.desc||'';
+  ATTRS.forEach(a=>{ const el=document.getElementById(`race-attr-${a.id}`); if(el) el.value=r.attrs?.[a.id]||0; });
+  document.getElementById('race-bonus-hp').value=r.bonusHp||0;
+  document.getElementById('race-bonus-mp').value=r.bonusMp||0;
+  document.getElementById('race-bonus-def').value=r.bonusResist||0;
+  document.getElementById('modal-race-title').textContent='Editar Raça';
+  openModal('modal-race');
+}
+
+function openEditClassModal(idx){
+  const classes=getClasses();
+  const c=classes[idx];
+  if(!c) return;
+  buildClassAttrInputs();
+  document.getElementById('class-edit-idx').value=idx;
+  document.getElementById('class-name').value=c.name;
+  document.getElementById('class-desc').value=c.desc||'';
+  ATTRS.forEach(a=>{ const el=document.getElementById(`class-attr-${a.id}`); if(el) el.value=c.attrs?.[a.id]||0; });
+  document.getElementById('class-bonus-hp').value=c.bonusHp||0;
+  document.getElementById('class-bonus-mp').value=c.bonusMp||0;
+  document.getElementById('class-bonus-def').value=c.bonusResist||0;
+  document.getElementById('modal-class-title').textContent='Editar Classe';
+  openModal('modal-class');
+}
+
+function deleteRace(idx){ const r=getRaces(); r.splice(idx,1); saveRacesDB(r); populateSelects(); renderRacesList(); }
+function deleteClass(idx){ const c=getClasses(); c.splice(idx,1); saveClassesDB(c); populateSelects(); renderClassesList(); }
+
+function buildRaceAttrInputs(){
+  const c=document.getElementById('race-attr-inputs'); if(!c) return;
+  c.innerHTML='';
+  ATTRS.forEach(a=>{ c.innerHTML+=`<div class="field"><label>${a.short}</label><input type="number" id="race-attr-${a.id}" value="0" min="0"/></div>`; });
+}
+function buildClassAttrInputs(){
+  const c=document.getElementById('class-attr-inputs'); if(!c) return;
+  c.innerHTML='';
+  ATTRS.forEach(a=>{ c.innerHTML+=`<div class="field"><label>${a.short}</label><input type="number" id="class-attr-${a.id}" value="0" min="0"/></div>`; });
+}
+function openRaceModal(){
+  buildRaceAttrInputs();
+  document.getElementById('race-edit-idx').value=-1;
+  document.getElementById('race-name').value='';
+  document.getElementById('race-desc').value='';
+  document.getElementById('race-bonus-hp').value=0;
+  document.getElementById('race-bonus-mp').value=0;
+  document.getElementById('race-bonus-def').value=0;
+  document.getElementById('modal-race-title').textContent='Nova Raça';
+  openModal('modal-race');
+}
+function openClassModal(){
+  buildClassAttrInputs();
+  document.getElementById('class-edit-idx').value=-1;
+  document.getElementById('class-name').value='';
+  document.getElementById('class-desc').value='';
+  document.getElementById('class-bonus-hp').value=0;
+  document.getElementById('class-bonus-mp').value=0;
+  document.getElementById('class-bonus-def').value=0;
+  document.getElementById('modal-class-title').textContent='Nova Classe';
+  openModal('modal-class');
+}
+function saveRace(){
+  const name=document.getElementById('race-name').value; if(!name){ toast('Nome obrigatório!'); return; }
+  const attrs={}; ATTRS.forEach(a=>{ attrs[a.id]=parseInt(document.getElementById(`race-attr-${a.id}`)?.value)||0; });
+  const bonusHp=parseInt(document.getElementById('race-bonus-hp')?.value)||0;
+  const bonusMp=parseInt(document.getElementById('race-bonus-mp')?.value)||0;
+  const bonusResist=parseInt(document.getElementById('race-bonus-def')?.value)||0;
+  const desc=document.getElementById('race-desc').value;
+  const races=getRaces();
+  const idx=parseInt(document.getElementById('race-edit-idx')?.value??'-1');
+  const entry={name,desc,attrs,bonusHp,bonusMp,bonusResist};
+  if(idx>=0) races[idx]=entry; else races.push(entry);
+  saveRacesDB(races); populateSelects(); renderRacesList(); closeModal('modal-race');
+  toast(idx>=0?'Raça atualizada!':'Raça adicionada!');
+  calcResources();
+}
+function saveClass(){
+  const name=document.getElementById('class-name').value; if(!name){ toast('Nome obrigatório!'); return; }
+  const attrs={}; ATTRS.forEach(a=>{ attrs[a.id]=parseInt(document.getElementById(`class-attr-${a.id}`)?.value)||0; });
+  const bonusHp=parseInt(document.getElementById('class-bonus-hp')?.value)||0;
+  const bonusMp=parseInt(document.getElementById('class-bonus-mp')?.value)||0;
+  const bonusResist=parseInt(document.getElementById('class-bonus-def')?.value)||0;
+  const desc=document.getElementById('class-desc').value;
+  const classes=getClasses();
+  const idx=parseInt(document.getElementById('class-edit-idx')?.value??'-1');
+  const entry={name,desc,attrs,bonusHp,bonusMp,bonusResist};
+  if(idx>=0) classes[idx]=entry; else classes.push(entry);
+  saveClassesDB(classes); populateSelects(); renderClassesList(); closeModal('modal-class');
+  toast(idx>=0?'Classe atualizada!':'Classe adicionada!');
+  calcResources();
+}
+
+// ── XP MODAL ──
+function openXpModal(){ document.getElementById('xp-add-current').textContent=getCurrentXP().toLocaleString(); document.getElementById('xp-add-amount').value=100; openModal('modal-xp'); }
+function addXP(){ const amount=parseInt(document.getElementById('xp-add-amount').value)||0; closeModal('modal-xp'); addXPAmount(amount); }
+function openLevelModal(){ document.getElementById('level-set-val').value=getCurrentLevel(); openModal('modal-level'); }
+function setLevelManual(){ const v=parseInt(document.getElementById('level-set-val').value)||1; document.getElementById('char-level').value=Math.max(1,v); onLevelChange(); autoSave(); closeModal('modal-level'); }
+
+// ── DICE ──
+let diceHistory=[];
+function rollDice(sides){ const r=Math.floor(Math.random()*sides)+1; showRoll(`1d${sides}`,r); }
+function showRoll(label,result){
+  const el=document.getElementById('dice-result');
+  el.textContent=result; el.style.animation='none'; el.offsetHeight; el.style.animation='';
+  diceHistory.unshift(`${label}→${result}`);
+  if(diceHistory.length>5) diceHistory.pop();
+  document.getElementById('dice-history').textContent=diceHistory.join(' • ');
+}
+
+// ── MODALS ──
+function openModal(id){ document.getElementById(id)?.classList.add('open'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+// ── SAVE / LOAD ──
+function getSlotsData(){
+  const slots=[];
+  for(let i=1;i<=11;i++){
+    slots.push({
+      name:document.getElementById(`slot-name-${i}`)?.value||'',
+      desc:document.getElementById(`slot-desc-${i}`)?.value||'',
+      xp:document.getElementById(`slot-xp-${i}`)?.value||'0'
+    });
+  }
+  return slots;
+}
+function getPassivesData(){
+  const rows=[];
+  document.querySelectorAll('#passives-list .passive-row').forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    rows.push({name:inputs[0]?.value||'',desc:inputs[1]?.value||'',xp:inputs[2]?.value||'0'});
+  });
+  return rows;
+}
+function getRepData(){
+  const rows=[];
+  document.querySelectorAll('#rep-grid .rep-box').forEach(box=>{
+    const inputs=box.querySelectorAll('input');
+    rows.push({name:inputs[0]?.value||'',title:inputs[1]?.value||''});
+  });
+  return rows;
+}
+function getConditionsData(){
+  const c={};
+  CONDITIONS.forEach(cond=>{ const id='cond-'+cond.replace(/\s/g,'_'); c[id]=document.getElementById(id)?.classList.contains('active')||false; });
+  return c;
+}
+function getSaveProfsData(){
+  const s={};
+  ATTRS.forEach(a=>{ s[a.id]=document.getElementById(`save-${a.id}`)?.classList.contains('checked')||false; });
+  return s;
+}
+
+function collectData(){
+  const attrs={}, attrBonus={};
+  ATTRS.forEach(a=>{
+    attrs[a.id]=document.getElementById(`attr-${a.id}`)?.textContent.trim()||'10';
+    attrBonus[a.id]=document.getElementById(`attr-bonus-${a.id}`)?.dataset.bonus||'0';
+  });
+  const savedData=loadData(currentPlayer)||{};
+  return {
+    charName:document.getElementById('char-name').value,
+    charClass:document.getElementById('char-class').value,
+    charSubclass:document.getElementById('char-subclass').value,
+    charRace:document.getElementById('char-race').value,
+    charBackground:document.getElementById('char-background').value,
+    charAlignment:document.getElementById('char-alignment').value,
+    charDeity:document.getElementById('char-deity').value,
+    charAge:document.getElementById('char-age')?.value||'',
+    charLevel:document.getElementById('char-level')?.value||'1',
+    charXp:document.getElementById('char-xp')?.value||'0',
+    attrs, attrBonus,
+    saveProfs:getSaveProfsData(),
+    conditions:getConditionsData(),
+    hpCur:document.getElementById('hp-cur')?.value||'50',
+    mpCur:document.getElementById('mp-cur')?.value||'25',
+    defesaVal:document.getElementById('defesa-val')?.value||'0',
+
+
+    gold:document.getElementById('gold').value, silver:document.getElementById('silver').value, copper:document.getElementById('copper').value,
+    inventory,
+    slots:getSlotsData(), passives:getPassivesData(), reputation:getRepData(),
+    noteTracos:document.getElementById('note-tracos').value,
+    noteIdeais:document.getElementById('note-ideais').value,
+    noteVinculos:document.getElementById('note-vinculos').value,
+    noteFrequezas:document.getElementById('note-fraquezas').value||'',
+    noteHistoria:document.getElementById('note-historia').value,
+    noteMagias:document.getElementById('note-magias').value,
+    portrait:document.getElementById('portrait-img').src||'',
+    charPortrait:(document.getElementById('char-portrait-img')?.src||''),
+    pacifistRep:document.getElementById('pacifist-rep')?.value||'0',
+    pacifistMissions:document.getElementById('pacifist-missions')?.value||'0',
+    prestige:savedData.prestige||0,
+    prestigeHistory:savedData.prestigeHistory||[],
+    attrHistory:document.getElementById('attr-history')?.innerHTML||'',
+  };
+}
+
+function applyData(d){
+  ATTRS.forEach(a=>{ const b=document.getElementById(`attr-bonus-${a.id}`); if(b) b.dataset.bonus='0'; });
+  if(!d){ inventory=[]; renderInventory(); updateAttrPointsDisplay(); return; }
+
+  const setText=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val||''; };
+  setText('char-name',d.charName); setText('char-class',d.charClass); setText('char-subclass',d.charSubclass);
+  setText('char-race',d.charRace); setText('char-background',d.charBackground);
+  setText('char-alignment',d.charAlignment); setText('char-deity',d.charDeity);
+  setText('char-age',d.charAge); setText('char-level',d.charLevel||'1');
+  setText('char-xp',d.charXp||'0');
+  setText('hp-cur',d.hpCur||'50');
+  setText('mp-cur',d.mpCur||'25');
+  const defEl=document.getElementById('defesa-val'); if(defEl) defEl.value=d.defesaVal||'0';
+
+  // stat-speed removed (initiative is auto-calculated)
+  setText('gold',d.gold||'0'); setText('silver',d.silver||'0'); setText('copper',d.copper||'0');
+  if(d.charPortrait&&d.charPortrait.length>50){ applyCharPortrait(d.charPortrait); } else { removeCharPortrait(); }
+  if(document.getElementById('pacifist-rep')) document.getElementById('pacifist-rep').value=d.pacifistRep||'0';
+  if(document.getElementById('pacifist-missions')) document.getElementById('pacifist-missions').value=d.pacifistMissions||'0';
+  setText('note-tracos',d.noteTracos); setText('note-ideais',d.noteIdeais);
+  setText('note-vinculos',d.noteVinculos); setText('note-fraquezas',d.noteFrequezas||d.noteFrequezas);
+  setText('note-historia',d.noteHistoria); setText('note-magias',d.noteMagias);
+
+  if(d.attrs) ATTRS.forEach(a=>{ const el=document.getElementById(`attr-${a.id}`); if(el) el.textContent=d.attrs[a.id]||'0'; });
+  if(d.attrBonus) ATTRS.forEach(a=>{ const el=document.getElementById(`attr-bonus-${a.id}`); if(el) el.dataset.bonus=d.attrBonus[a.id]||'0'; });
+  if(d.saveProfs) ATTRS.forEach(a=>{ const el=document.getElementById(`save-${a.id}`); if(el) el.classList.toggle('checked',!!d.saveProfs[a.id]); });
+  if(d.conditions) CONDITIONS.forEach(c=>{ const id='cond-'+c.replace(/\s/g,'_'); const el=document.getElementById(id); if(el) el.classList.toggle('active',!!d.conditions[id]); });
+
+  inventory = d.inventory||[];
+  renderInventory();
+
+  document.getElementById('passives-list').innerHTML='';
+  if(d.passives?.length) d.passives.forEach(p=>addPassive(p.name,parseInt(p.xp)||0,p.desc||''));
+
+  document.getElementById('rep-grid').innerHTML='';
+  if(d.reputation?.length){ d.reputation.forEach(r=>addReputation(r.name,r.title)); document.getElementById('rep-empty').style.display='none'; }
+  else document.getElementById('rep-empty').style.display='';
+
+  if(d.attrHistory){ const el=document.getElementById('attr-history'); if(el) el.innerHTML=d.attrHistory; }
+
+  if(d.portrait&&d.portrait.length>50){
+    const img=document.getElementById('portrait-img');
+    img.src=d.portrait;
+    img.style.display='block';
+    img.style.position='absolute';
+    img.style.top='0'; img.style.left='0';
+    img.style.width='100%'; img.style.height='100%';
+    img.style.objectFit='cover';
+    document.getElementById('portrait-ph').style.display='none';
+    document.getElementById('portrait-hint').style.display='none';
+  } else {
+    document.getElementById('portrait-img').src='';
+    document.getElementById('portrait-img').style.display='none';
+    document.getElementById('portrait-ph').style.display='';
+    document.getElementById('portrait-hint').style.display='';
+  }
+
+  // Prestige
+  if(d.prestige){
+    document.getElementById('dash-prestige-badge').style.display='inline-block';
+    document.getElementById('dash-prestige-count').textContent=d.prestige;
+  }
+  const histEl=document.getElementById('prestige-history');
+  if(histEl&&d.prestigeHistory?.length) histEl.innerHTML=d.prestigeHistory.map(h=>`<div>${h}</div>`).join('');
+
+  onNameChange(); onClassChange();
+  updateAllAttrMods(); updateSaves();
+  updateBar('hp'); updateBar('mp'); updateBar('san');
+  updateAttrPointsDisplay(); updateXpBar(); refreshDashLevel();
+  updateSlots();
+  updatePrestigeScreen();
+  updatePacifistPanel();
+  calcResources();
+  updateCharQuickInfo();
+  buildAttrsMiniGrid();
+
+  // restore slots after updateSlots
+  if(d.slots) d.slots.forEach((s,idx)=>{
+    const ni=document.getElementById(`slot-name-${idx+1}`);
+    const di=document.getElementById(`slot-desc-${idx+1}`);
+    const xi=document.getElementById(`slot-xp-${idx+1}`);
+    if(ni) ni.value=s.name||'';
+    if(di) di.value=s.desc||'';
+    if(xi){ xi.value=s.xp||0; updateSlotLevel(idx+1); }
+  });
+}
+
+function loadData(player){ try{ const raw=localStorage.getItem(`rpg_ablube_p${player}`); return raw?JSON.parse(raw):null; }catch{ return null; } }
+
+function saveChar(showToast=true){
+  try{ localStorage.setItem(`rpg_ablube_p${currentPlayer}`,JSON.stringify(collectData())); if(showToast) toast('Ficha salva! 👁'); buildPlayerSelector(); }
+  catch(e){ if(showToast) toast('Erro ao salvar!'); }
+}
+function loadChar(){ applyData(loadData(currentPlayer)); }
+function clearChar(){
+  if(!confirm('Apagar ficha deste jogador? Não pode ser desfeito.')) return;
+  localStorage.removeItem(`rpg_ablube_p${currentPlayer}`);
+  inventory=[];
+  applyData(null); toast('Ficha limpa.'); buildPlayerSelector();
+}
+
+// ── EXPORT / IMPORT ──
+function exportJSON(){
+  const data=collectData();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`rpg-ablube-${data.charName||'personagem'}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Ficha exportada!');
+}
+function importJSON(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      applyData(data); saveChar(false); toast('Ficha importada!');
+    }catch{ toast('Erro ao importar JSON!'); }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+// ── AUTO SAVE / TOAST / PRINT ──
+let autoSaveTimer;
+function autoSave(){ clearTimeout(autoSaveTimer); autoSaveTimer=setTimeout(()=>saveChar(false),1800); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+function printChar(){ window.print(); }
+
+// ── INIT ──
+function init(){
+  populateSelects();
+  buildAttributes();
+  buildSaves();
+  buildConditions();
+  buildPlayerSelector();
+  loadChar();
+  updateSlots();
+  setInterval(()=>saveChar(false), 30000); // auto-backup every 30s
+}
+init();
+
+
+</script>
+<script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  const btn = document.createElement('button');
+  btn.className='btn-sm';
+  btn.style.cssText='position:fixed;bottom:1rem;left:1rem;z-index:1000;background:rgba(192,38,211,0.2);border-color:var(--magenta)';
+  btn.textContent='📱 Instalar App';
+  btn.onclick = async () => { if(deferredPrompt){ deferredPrompt.prompt(); const r=await deferredPrompt.userChoice; if(r.outcome==='accepted') btn.remove(); deferredPrompt=null; } };
+  document.body.appendChild(btn);
+});
+</script>
+</body>
+</html>
